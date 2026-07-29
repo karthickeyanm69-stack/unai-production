@@ -1,0 +1,94 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --color-soft-ivory: #F7F5EF;
+    --color-trust-blue: #1B4B66;
+    --color-prosperity-green: #1F8A5F;
+    --color-celebration-gold: #D4A62A;
+    --color-deep-charcoal: #1E2732;
+    --color-muted-steel: #5C6773;
+    --color-alert-amber: #DB9A2C;
+    --color-alert-amber-bg: #FDF6E2;
+    --color-alert-red: #C0392B;
+    --color-confirm-green: #2E9E5B;
+  }
+
+  body {
+    background-color: var(--color-soft-ivory);
+    color: var(--color-deep-charcoal);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, .font-heading {
+    font-family: 'Sora', 'Inter', sans-serif;
+  }
+}
+
+.layout-container {
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 768px) {
+  .layout-container {
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+  }
+}
+
+/* Glass & Navbar Non-Overlapping Utilities */
+.glass-navbar {
+  background-color: rgba(247, 245, 239, 0.98);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(27, 75, 102, 0.12);
+  box-shadow: 0 4px 20px -2px rgba(27, 75, 102, 0.06);
+}
+
+.glass-nav-pill {
+  background-color: #ffffff;
+  border: 1px solid rgba(27, 75, 102, 0.15);
+  box-shadow: 0 4px 12px -2px rgba(27, 75, 102, 0.08);
+}
+
+/* Custom Micro-Animations & Shadows */
+.shadow-premium {
+  box-shadow: 0 10px 30px -10px rgba(27, 75, 102, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.03);
+}
+
+.shadow-glow-gold {
+  box-shadow: 0 0 25px rgba(212, 166, 42, 0.35);
+}
+
+.shadow-glow-blue {
+  box-shadow: 0 0 30px rgba(27, 75, 102, 0.25);
+}
+
+.hover-lift {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 36px -12px rgba(27, 75, 102, 0.12);
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

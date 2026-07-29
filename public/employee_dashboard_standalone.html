@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SamruddiSave — Employee Operations Portal</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background-color: #F7F5EF;
+      color: #1E2732;
+      font-family: 'Inter', sans-serif;
+    }
+    h1, h2, h3, h4 {
+      font-family: 'Sora', sans-serif;
+    }
+    .shadow-premium {
+      box-shadow: 0 10px 30px -10px rgba(27, 75, 102, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.03);
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+  <div class="flex flex-col lg:flex-row">
+    <!-- Top Mobile Header -->
+    <header class="lg:hidden bg-white border-b border-slate-200 p-4 flex items-center justify-between">
+      <span class="font-bold text-base text-[#1E2732]">SamruddiSave Employee Portal</span>
+      <span class="text-xs bg-[#1B4B66]/10 text-[#1B4B66] font-bold px-3 py-1 rounded-full">Priya V.</span>
+    </header>
+
+    <!-- Sidebar Navigation -->
+    <aside class="w-full lg:w-64 bg-white border-r border-slate-200 p-6 space-y-6">
+      <div class="flex items-center space-x-3 border-b border-slate-100 pb-4">
+        <div class="w-10 h-10 rounded-[14px] bg-[#1B4B66] text-[#D4A62A] flex items-center justify-center font-extrabold shadow-md">
+          🛡️
+        </div>
+        <div>
+          <p class="font-bold text-sm text-[#1E2732]">SamruddiSave</p>
+          <p class="text-[10px] text-[#5C6773] font-bold">Employee MRM Portal</p>
+        </div>
+      </div>
+
+      <nav class="space-y-1 text-xs font-bold">
+        <a href="#" class="block px-3.5 py-3 rounded-[14px] bg-[#1B4B66] text-white font-extrabold shadow-md">
+          📊 Overview
+        </a>
+        <a href="#" class="block px-3.5 py-3 rounded-[14px] text-[#5C6773] hover:bg-[#F7F5EF]">
+          👥 My Members (48)
+        </a>
+        <a href="#" class="block px-3.5 py-3 rounded-[14px] text-[#5C6773] hover:bg-[#F7F5EF]">
+          🛡️ Pending KYC (3)
+        </a>
+        <a href="#" class="block px-3.5 py-3 rounded-[14px] text-[#5C6773] hover:bg-[#F7F5EF]">
+          💳 Payment Monitoring
+        </a>
+        <a href="#" class="block px-3.5 py-3 rounded-[14px] text-[#DB9A2C] hover:bg-[#F7F5EF]">
+          ⚠️ Grace Period (3)
+        </a>
+        <a href="#" class="block px-3.5 py-3 rounded-[14px] text-[#D4A62A] hover:bg-[#F7F5EF]">
+          🎁 Hamper Selection (2)
+        </a>
+        <a href="#" class="block px-3.5 py-3 rounded-[14px] text-[#1F8A5F] hover:bg-[#F7F5EF]">
+          💰 Payout Processing (₹5.2L)
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 p-6 sm:p-8 space-y-8 max-w-7xl mx-auto">
+      <div>
+        <span class="text-xs font-extrabold uppercase tracking-widest text-[#1B4B66]">Standalone Member Operations</span>
+        <h1 class="font-extrabold text-3xl text-[#1E2732] mt-1">Employee Operations Dashboard</h1>
+      </div>
+
+      <!-- KPI Grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div class="bg-white border border-[#1B4B66]/15 rounded-[22px] p-5 shadow-premium">
+          <span class="text-[11px] text-[#5C6773] font-bold uppercase block">Assigned Members</span>
+          <span class="text-3xl font-extrabold text-[#1B4B66]">48</span>
+        </div>
+        <div class="bg-white border border-[#D4A62A]/40 rounded-[22px] p-5 shadow-premium">
+          <span class="text-[11px] text-[#5C6773] font-bold uppercase block">Pending KYC</span>
+          <span class="text-3xl font-extrabold text-[#D4A62A]">3</span>
+        </div>
+        <div class="bg-white border border-[#1B4B66]/15 rounded-[22px] p-5 shadow-premium">
+          <span class="text-[11px] text-[#5C6773] font-bold uppercase block">Today's Due</span>
+          <span class="text-3xl font-extrabold text-[#1B4B66]">14</span>
+        </div>
+        <div class="bg-white border border-[#DB9A2C]/30 rounded-[22px] p-5 shadow-premium">
+          <span class="text-[11px] text-[#5C6773] font-bold uppercase block">Grace Period</span>
+          <span class="text-3xl font-extrabold text-[#DB9A2C]">3</span>
+        </div>
+        <div class="bg-white border border-[#1F8A5F]/20 rounded-[22px] p-5 shadow-premium">
+          <span class="text-[11px] text-[#5C6773] font-bold uppercase block">Upcoming Payouts</span>
+          <span class="text-3xl font-extrabold text-[#1F8A5F]">₹5.2L</span>
+        </div>
+        <div class="bg-white border border-purple-200 rounded-[22px] p-5 shadow-premium">
+          <span class="text-[11px] text-[#5C6773] font-bold uppercase block">Open Tickets</span>
+          <span class="text-3xl font-extrabold text-purple-700">2</span>
+        </div>
+      </div>
+
+      <!-- Member Table -->
+      <div class="bg-white border border-[#1B4B66]/15 rounded-[28px] p-6 sm:p-8 shadow-premium space-y-4">
+        <h3 class="font-extrabold text-xl text-[#1E2732]">Assigned Member Operations Queue</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead>
+              <tr class="border-b border-slate-200 text-[#5C6773] uppercase font-bold">
+                <th class="pb-3">Member Name</th>
+                <th class="pb-3">Phone</th>
+                <th class="pb-3">KYC Status</th>
+                <th class="pb-3">Savings Plan</th>
+                <th class="pb-3 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr>
+                <td class="py-4 font-bold text-[#1E2732]">Ananya Sharma</td>
+                <td class="py-4 font-mono">+91 98765 43210</td>
+                <td class="py-4 font-bold text-[#1F8A5F]">APPROVED</td>
+                <td class="py-4 font-bold text-[#1B4B66]">₹1,000/mo Gold Harvest</td>
+                <td class="py-4 text-right">
+                  <button class="bg-[#1B4B66] text-white font-bold px-3 py-1.5 rounded-[8px]">Inspect Profile</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="py-4 font-bold text-[#1E2732]">Rahul Verma</td>
+                <td class="py-4 font-mono">+91 98111 22233</td>
+                <td class="py-4 font-bold text-[#D4A62A]">PENDING</td>
+                <td class="py-4 font-bold text-[#1B4B66]">₹500/mo Starter</td>
+                <td class="py-4 text-right">
+                  <button class="bg-[#1F8A5F] text-white font-bold px-3 py-1.5 rounded-[8px]">Approve KYC</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
