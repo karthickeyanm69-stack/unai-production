@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Sparkles, ArrowRight, ArrowUpRight, CheckCircle2, Lock, Gift, Users, Coins } from 'lucide-react';
+import { Shield, Sparkles, ArrowRight, ArrowUpRight, CheckCircle2, Lock, Gift, Users, Coins, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {
   const [monthlyDeposit, setMonthlyDeposit] = useState<number>(1000);
@@ -13,12 +13,35 @@ export const LandingPage: React.FC = () => {
   const giftHamperValue = monthlyDeposit >= 2000 ? 3000 : 2000;
   const totalMaturityValue = totalSaved + cashBonus + giftHamperValue;
 
-  const handleCardsScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const container = e.currentTarget;
-    const scrollLeft = container.scrollLeft;
-    const cardWidth = 230; // Card width + gap
-    const idx = Math.min(4, Math.max(0, Math.round(scrollLeft / cardWidth)));
-    setActiveCardIndex(idx);
+  // Real-time active center detector for smooth scaling on ALL cards (1 to 5)
+  const handleCardsScroll = () => {
+    if (!scrollContainerRef.current) return;
+    const container = scrollContainerRef.current;
+    const containerCenter = container.scrollLeft + container.clientWidth / 2;
+    const children = Array.from(container.children) as HTMLElement[];
+    let closestIndex = 0;
+    let minDistance = Infinity;
+
+    children.forEach((child, idx) => {
+      const childCenter = child.offsetLeft + child.clientWidth / 2;
+      const distance = Math.abs(containerCenter - childCenter);
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestIndex = idx;
+      }
+    });
+    setActiveCardIndex(closestIndex);
+  };
+
+  const scrollToCard = (index: number) => {
+    if (!scrollContainerRef.current) return;
+    const container = scrollContainerRef.current;
+    const children = Array.from(container.children) as HTMLElement[];
+    if (children[index]) {
+      const child = children[index];
+      const targetScroll = child.offsetLeft - (container.clientWidth - child.clientWidth) / 2;
+      container.scrollTo({ left: targetScroll, behavior: 'smooth' });
+    }
   };
 
   const cardsData = [
@@ -75,7 +98,7 @@ export const LandingPage: React.FC = () => {
       badge: 'Savings Circles',
       title: 'Group Circle',
       sub: 'Shared Streaks',
-      img: '/assets/card_exec_circle_light.png',
+      img: '/assets/card_exec_circles_light.png',
       alt: 'Group Circle Card 3D',
       footer: '6 Circle Members',
       gradient: 'from-[#1E2732] via-[#123448] to-[#1B4B66]',
@@ -119,12 +142,49 @@ export const LandingPage: React.FC = () => {
             </Link>
           </div>
 
-          {/* Edge-Free Full Padding Side-to-Side Interactive Cards Carousel */}
-          <div className="pt-6 sm:pt-10 pb-4 w-full overflow-hidden">
+          {/* Interactive Cards Slider & Smooth Animation Showcase */}
+          <div className="pt-6 sm:pt-10 pb-4 w-full relative">
+            
+            {/* Scroll Navigation Arrows */}
+            <div className="flex items-center justify-center gap-3 mb-3">
+              <button
+                type="button"
+                onClick={() => scrollToCard(Math.max(0, activeCardIndex - 1))}
+                className="w-8 h-8 rounded-full bg-white border border-[#1B4B66]/30 text-[#1B4B66] flex items-center justify-center hover:bg-slate-100 transition-all cursor-pointer shadow-sm"
+                aria-label="Previous Savings Tier Card"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              
+              <div className="flex items-center gap-1.5">
+                {cardsData.map((_, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => scrollToCard(idx)}
+                    className={`h-2 rounded-full transition-all cursor-pointer ${
+                      activeCardIndex === idx ? 'w-6 bg-[#1B4B66]' : 'w-2 bg-slate-300 hover:bg-slate-400'
+                    }`}
+                    aria-label={`Go to Card ${idx + 1}`}
+                  />
+                ))}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => scrollToCard(Math.min(4, activeCardIndex + 1))}
+                className="w-8 h-8 rounded-full bg-white border border-[#1B4B66]/30 text-[#1B4B66] flex items-center justify-center hover:bg-slate-100 transition-all cursor-pointer shadow-sm"
+                aria-label="Next Savings Tier Card"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Scroll Container with Generous Padding to Prevent Side Edge Truncation */}
             <div
               ref={scrollContainerRef}
               onScroll={handleCardsScroll}
-              className="flex items-center justify-start xl:justify-center gap-3 sm:gap-5 max-w-full mx-auto overflow-x-auto snap-x snap-mandatory py-8 scrollbar-none px-6 sm:px-12 md:px-20 scroll-px-6 sm:scroll-px-12"
+              className="flex items-center gap-4 sm:gap-6 max-w-full mx-auto overflow-x-auto snap-x snap-mandatory py-8 scrollbar-none px-12 sm:px-24 md:px-36 scroll-px-12 sm:scroll-px-24"
               style={{ scrollBehavior: 'smooth' }}
             >
               {cardsData.map((card, i) => {
@@ -133,49 +193,60 @@ export const LandingPage: React.FC = () => {
                 return (
                   <div
                     key={card.id}
-                    onClick={() => setActiveCardIndex(i)}
-                    className={`snap-center w-48 sm:w-56 h-80 sm:h-96 rounded-3xl p-5 sm:p-6 bg-gradient-to-b ${card.gradient} text-white shadow-xl transition-all duration-300 shrink-0 border ${card.border} flex flex-col justify-between overflow-hidden relative cursor-pointer ${
+                    onClick={() => scrollToCard(i)}
+                    className={`snap-center w-52 sm:w-60 h-[360px] sm:h-[400px] rounded-[28px] bg-gradient-to-b ${card.gradient} shadow-xl transition-all duration-300 shrink-0 border ${card.border} relative cursor-pointer ${
                       isActive
-                        ? 'scale-105 sm:scale-110 shadow-2xl z-30 ring-2 ring-[#D4A62A]/60'
-                        : 'scale-95 opacity-90 hover:opacity-100 z-10'
+                        ? 'scale-105 sm:scale-110 shadow-2xl z-30 ring-4 ring-[#D4A62A]/60'
+                        : 'scale-95 opacity-85 hover:opacity-100 z-10'
                     }`}
                   >
-                    <div>
-                      <span className="text-[10px] font-mono uppercase tracking-wider text-slate-300 block">{card.badge}</span>
-                      <h4 className="font-['Sora'] font-extrabold text-lg sm:text-xl text-white mt-0.5">{card.title}</h4>
-                      <p className="text-[11px] text-slate-200">{card.sub}</p>
-                    </div>
-
-                    <div className="my-2 relative h-36 sm:h-44 flex items-center justify-center">
-                      <img
-                        src={card.img}
-                        alt={card.alt}
-                        className={`w-32 sm:w-36 h-32 sm:h-36 object-contain drop-shadow-2xl transition-transform duration-300 ${
-                          isActive ? 'scale-125' : 'scale-100'
-                        }`}
-                      />
-                    </div>
-
-                    {card.isCenter ? (
-                      <div className="bg-black/40 backdrop-blur p-3 rounded-2xl text-white space-y-1.5 border border-white/20">
-                        <div className="flex justify-between text-[11px] font-bold">
-                          <span className="text-[#1F8A5F]">Escrow Status</span>
-                          <span className="text-[#D4A62A]">Month 8/12</span>
-                        </div>
-                        <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
-                          <div className="w-[66%] h-full bg-gradient-to-r from-[#1F8A5F] to-[#D4A62A] rounded-full" />
-                        </div>
+                    <div className="flex flex-col justify-between h-full p-5 sm:p-6 text-white overflow-hidden relative select-none">
+                      
+                      {/* Top Card Header */}
+                      <div className="space-y-0.5 z-10 shrink-0 text-left">
+                        <span className="text-[10px] font-mono uppercase tracking-wider text-slate-300 block">{card.badge}</span>
+                        <h4 className="font-['Sora'] font-extrabold text-base sm:text-xl text-white tracking-tight leading-tight">{card.title}</h4>
+                        <p className="text-[11px] text-slate-200">{card.sub}</p>
                       </div>
-                    ) : (
-                      <div className={`${card.footerBg} backdrop-blur rounded-2xl p-2.5 text-center border border-white/20`}>
-                        <span className="text-[11px] font-bold">{card.footer}</span>
+
+                      {/* 3D Graphic Image Area (No Overlap) */}
+                      <div className="my-auto py-2 flex items-center justify-center relative shrink-0 h-32 sm:h-36">
+                        <img
+                          src={card.img}
+                          alt={card.alt}
+                          className={`max-h-full max-w-full object-contain drop-shadow-2xl transition-all duration-300 ${
+                            isActive ? 'scale-110 sm:scale-125' : 'scale-95'
+                          }`}
+                          onError={(e) => {
+                            e.currentTarget.src = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&auto=format&fit=crop&q=80';
+                          }}
+                        />
                       </div>
-                    )}
+
+                      {/* Bottom Footer Badge / Progress Bar */}
+                      <div className="shrink-0 z-10 pt-1">
+                        {card.isCenter ? (
+                          <div className="bg-black/50 backdrop-blur p-3 rounded-2xl text-white space-y-1.5 border border-white/25 shadow-md">
+                            <div className="flex justify-between text-[11px] font-bold">
+                              <span className="text-[#1F8A5F]">Escrow Status</span>
+                              <span className="text-[#D4A62A]">Month 8/12</span>
+                            </div>
+                            <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                              <div className="w-[66%] h-full bg-gradient-to-r from-[#1F8A5F] to-[#D4A62A] rounded-full" />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className={`${card.footerBg} backdrop-blur rounded-2xl p-2.5 text-center border border-white/20 shadow-md`}>
+                            <span className="text-[11px] font-bold">{card.footer}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 );
               })}
             </div>
-            <p className="text-[11px] text-[#5C6773] font-bold text-center mt-2">← Scroll or tap cards to inspect savings tiers →</p>
+            <p className="text-[11px] text-[#5C6773] font-bold text-center mt-1">← Tap arrows or scroll cards to inspect savings tiers →</p>
           </div>
         </section>
 
