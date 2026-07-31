@@ -126,6 +126,49 @@ class StateStore {
     } catch (e) {}
   }
 
+  public getDeviceAccounts(): Profile[] {
+    try {
+      const saved = localStorage.getItem('samruddisave_device_accounts');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch (e) {}
+
+    const current = this.getCurrentUser();
+    if (current && current.id !== 'guest') {
+      this.saveDeviceAccount(current);
+      return [current];
+    }
+    const defaultUser = this.profiles.find((p) => p.id === 'usr_karthik') || this.profiles[0];
+    this.saveDeviceAccount(defaultUser);
+    return [defaultUser];
+  }
+
+  public saveDeviceAccount(profile: Profile) {
+    if (!profile || profile.id === 'guest') return;
+    try {
+      const currentAccounts = this.getDeviceAccounts();
+      const existsIndex = currentAccounts.findIndex((p) => p.id === profile.id || p.email.toLowerCase() === profile.email.toLowerCase());
+      if (existsIndex >= 0) {
+        currentAccounts[existsIndex] = profile;
+      } else {
+        currentAccounts.push(profile);
+      }
+      localStorage.setItem('samruddisave_device_accounts', JSON.stringify(currentAccounts));
+    } catch (e) {}
+  }
+
+  public removeDeviceAccount(id: string) {
+    try {
+      const currentAccounts = this.getDeviceAccounts().filter((p) => p.id !== id);
+      localStorage.setItem('samruddisave_device_accounts', JSON.stringify(currentAccounts));
+      this.notify();
+    } catch (e) {}
+  }
+
   subscribe(listener: Listener) {
     this.listeners.push(listener);
     return () => {
@@ -208,6 +251,7 @@ class StateStore {
     if (user) {
       this.currentUserId = user.id;
       this.isAuthenticated = true;
+      this.saveDeviceAccount(user);
       this.saveSession();
       this.logAuditAction('USER_LOGIN', 'Auth', `User ${user.fullName} (${user.email}) logged in successfully.`);
       this.notify();

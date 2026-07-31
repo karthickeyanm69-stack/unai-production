@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, Smartphone, User, X, ArrowRight, Shield } from 'lucide-react';
+import { Lock, Smartphone, User, X, ArrowRight, Shield, Zap, Check } from 'lucide-react';
 import { store } from '../store';
 
 interface LoginModalProps {
@@ -15,7 +15,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSucce
   const [pin, setPin] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [loginMethod, setLoginMethod] = useState<'password' | 'sso'>('password');
+  const [loginMethod, setLoginMethod] = useState<'password' | 'quick'>('password');
 
   useEffect(() => {
     if (isOpen) {
@@ -34,6 +34,28 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSucce
 
   if (!isOpen) return null;
 
+  const quickAccounts = [
+    { name: 'Karthik', role: 'Member Wallet (₹2,000/mo)', email: 'karthickeyanm69@gmail.com', path: '/dashboard' },
+    { name: 'Priya Verma', role: 'Employee MRM Officer', email: 'priya.verma@samruddisave.com', path: '/employee' },
+    { name: 'Rahul Verma', role: 'Pending KYC Review', email: 'rahul.verma@example.com', path: '/dashboard' },
+    { name: 'Amit Hegde', role: 'Customer Support Desk', email: 'support.agent@samruddisave.com', path: '/support' },
+    { name: 'Vikram Joshi', role: 'Finance Escrow Admin', email: 'finance.admin@samruddisave.com', path: '/finance' },
+    { name: 'Rajesh Sharma', role: 'Super Admin Governance', email: 'rajesh.admin@samruddisave.com', path: '/admin' },
+  ];
+
+  const handleQuickLogin = (email: string, targetPath: string) => {
+    setIsSubmitting(true);
+    setTimeout(() => {
+      const user = store.loginUser(email, '1234');
+      setIsSubmitting(false);
+      if (user) {
+        onClose();
+        if (onSuccess) onSuccess();
+        navigate(targetPath);
+      }
+    }, 400);
+  };
+
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -46,7 +68,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSucce
         onClose();
         if (onSuccess) onSuccess();
 
-        // Single Unified Login: Automatic role-based dashboard redirection
         if (user.role === 'member') {
           navigate('/dashboard');
         } else if (user.role === 'employee') {
@@ -61,23 +82,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSucce
       } else {
         setError('Invalid login credentials or PIN. Please check your mobile/email and security PIN.');
       }
-    }, 600);
-  };
-
-  const handleSSOLogin = (provider: string) => {
-    setIsSubmitting(true);
-    setTimeout(() => {
-      const user = store.getCurrentUser();
-      setIsSubmitting(false);
-      onClose();
-      if (onSuccess) onSuccess();
-
-      if (user.role === 'member') navigate('/dashboard');
-      else if (user.role === 'employee') navigate('/employee');
-      else if (user.role === 'support_agent') navigate('/support');
-      else if (user.role === 'finance_admin') navigate('/finance');
-      else if (user.role === 'super_admin') navigate('/admin');
-    }, 600);
+    }, 500);
   };
 
   return (
@@ -120,12 +125,13 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSucce
             Mobile & Security PIN
           </button>
           <button
-            onClick={() => setLoginMethod('sso')}
-            className={`flex-1 py-2 rounded-[10px] transition-all cursor-pointer ${
-              loginMethod === 'sso' ? 'bg-[#1B4B66] text-white shadow-sm font-extrabold' : 'text-[#5C6773]'
+            onClick={() => setLoginMethod('quick')}
+            className={`flex-1 py-2 rounded-[10px] transition-all cursor-pointer flex items-center justify-center gap-1 ${
+              loginMethod === 'quick' ? 'bg-[#1B4B66] text-white shadow-sm font-extrabold' : 'text-[#5C6773]'
             }`}
           >
-            GPay / PhonePe SSO
+            <Zap className="w-3.5 h-3.5 text-[#D4A62A]" />
+            <span>1-Click Fast Login</span>
           </button>
         </div>
 
@@ -169,7 +175,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSucce
               className="w-full py-3.5 rounded-[14px] bg-[#1B4B66] hover:bg-[#123448] text-white font-['Sora'] font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
               {isSubmitting ? (
-                <span>Authenticating & Routing...</span>
+                <span>Authenticating...</span>
               ) : (
                 <>
                   <span>Sign In & Go to Dashboard</span>
@@ -179,34 +185,23 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose, onSucce
             </button>
           </form>
         ) : (
-          /* SSO Login Options (GPay, PhonePe) */
-          <div className="space-y-3">
-            <p className="text-xs text-[#5C6773] text-center font-medium">Select your preferred authentication app to sign in:</p>
-            <button
-              onClick={() => handleSSOLogin('gpay')}
-              className="w-full p-3 rounded-[14px] bg-slate-100 hover:bg-[#1B4B66]/10 border border-slate-300 flex items-center justify-between transition-all font-bold text-xs cursor-pointer"
-            >
-              <div className="flex items-center space-x-3">
-                <div className="w-7 h-7 rounded-full bg-white flex items-center justify-center text-blue-600 font-extrabold text-xs border border-slate-200">
-                  G
+          /* 1-Click Fast Account Login Options */
+          <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+            <p className="text-xs text-[#5C6773] font-medium mb-2">Select an account below to sign in instantly with 1 click:</p>
+            {quickAccounts.map((acc, idx) => (
+              <button
+                key={idx}
+                onClick={() => handleQuickLogin(acc.email, acc.path)}
+                disabled={isSubmitting}
+                className="w-full p-3 rounded-[14px] bg-slate-50 hover:bg-[#1B4B66]/10 border border-slate-200 flex items-center justify-between transition-all font-bold text-xs cursor-pointer text-left"
+              >
+                <div>
+                  <p className="font-extrabold text-[#1E2732]">{acc.name}</p>
+                  <p className="text-[10px] text-[#1B4B66]">{acc.role}</p>
                 </div>
-                <span>Google Pay (GPay) Fast Login</span>
-              </div>
-              <ArrowRight className="w-4 h-4 text-slate-400" />
-            </button>
-
-            <button
-              onClick={() => handleSSOLogin('phonepe')}
-              className="w-full p-3 rounded-[14px] bg-slate-100 hover:bg-[#1B4B66]/10 border border-slate-300 flex items-center justify-between transition-all font-bold text-xs cursor-pointer"
-            >
-              <div className="flex items-center space-x-3">
-                <div className="w-7 h-7 rounded-full bg-purple-700 text-white flex items-center justify-center font-extrabold text-xs">
-                  P
-                </div>
-                <span>PhonePe AutoPay Login</span>
-              </div>
-              <ArrowRight className="w-4 h-4 text-slate-400" />
-            </button>
+                <ArrowRight className="w-4 h-4 text-[#1B4B66]" />
+              </button>
+            ))}
           </div>
         )}
 

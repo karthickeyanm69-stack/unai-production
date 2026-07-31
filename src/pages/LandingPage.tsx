@@ -50,7 +50,7 @@ export const LandingPage: React.FC = () => {
           </p>
 
           {/* CTA Button */}
-          <div className="flex items-center justify-center gap-4 pt-1">
+          <div id="hero-cta-button" className="flex items-center justify-center gap-4 pt-1">
             <Link
               to="/kyc"
               className="px-6 sm:px-8 py-3.5 sm:py-4 rounded-full bg-[#1B4B66] hover:bg-[#123448] text-white font-['Sora'] font-extrabold text-xs sm:text-sm shadow-glow-blue hover:scale-105 transition-all flex items-center gap-2"

@@ -2,12 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Home,
-  CreditCard,
   Send,
   Gift,
   Users,
   User,
-  Shield,
   Lock,
   Info,
   ShieldCheck,
@@ -18,17 +16,41 @@ import {
   MessageSquare,
 } from 'lucide-react';
 import { store } from '../store';
-import { LoginModal } from './LoginModal';
 
 export const BottomNavDock: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [, setTick] = useState(0);
+  const [showStartSavingBtn, setShowStartSavingBtn] = useState(false);
 
   useEffect(() => {
     const unsub = store.subscribe(() => setTick((t) => t + 1));
     return unsub;
   }, []);
+
+  useEffect(() => {
+    if (location.pathname !== '/') {
+      setShowStartSavingBtn(true);
+      return;
+    }
+
+    const handleScroll = () => {
+      const heroBtn = document.getElementById('hero-cta-button');
+      if (heroBtn) {
+        const rect = heroBtn.getBoundingClientRect();
+        // Seamless handoff: Show dock CTA the EXACT SECOND hero CTA leaves the viewport (rect.bottom <= 0)
+        // Never both on screen, never neither on screen!
+        setShowStartSavingBtn(rect.bottom <= 0);
+      } else {
+        setShowStartSavingBtn(window.scrollY > 300);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [location.pathname]);
 
   const currentUser = store.getCurrentUser();
   const isAuthenticated = store.getIsAuthenticated();
@@ -67,7 +89,7 @@ export const BottomNavDock: React.FC = () => {
 
   return (
     <>
-      <div className="fixed bottom-4 md:bottom-8 left-1/2 -translate-x-1/2 z-50 bg-white/95 border-2 border-[#1B4B66]/30 rounded-full p-2 sm:p-2.5 flex items-center gap-2 sm:gap-3 shadow-2xl backdrop-blur-xl pb-[calc(0.5rem+env(safe-area-inset-bottom))] animate-fade-up">
+      <div className="fixed bottom-4 md:bottom-8 left-1/2 -translate-x-1/2 z-50 bg-white/95 border-2 border-[#1B4B66]/30 rounded-full p-2 sm:p-2.5 flex items-center gap-2 sm:gap-3 shadow-2xl backdrop-blur-xl pb-[calc(0.5rem+env(safe-area-inset-bottom))] transition-all duration-300 ease-out">
         {/* CASE A: New Customer / Visitor Dock (Active on Public Landing, How It Works, Trust, KYC) */}
         {(isPublicNewCustomerRoute || !isAuthenticated) && (
           <>
@@ -116,13 +138,22 @@ export const BottomNavDock: React.FC = () => {
               <span className="hidden sm:inline font-extrabold">Login</span>
             </button>
 
-            <Link
-              to="/kyc"
-              className="px-4 py-2.5 sm:px-5 sm:py-3 rounded-full bg-[#1B4B66] hover:bg-[#123448] text-white font-['Sora'] font-extrabold text-xs shadow-md transition-all flex items-center gap-1.5 hover:scale-105 cursor-pointer"
+            {/* Seamless Animated "Start Saving" Button attached EXACTLY when hero CTA leaves viewport */}
+            <div
+              className={`transition-all duration-300 ease-out transform origin-right flex items-center ${
+                showStartSavingBtn
+                  ? 'max-w-[170px] opacity-100 scale-100 translate-x-0 ml-1'
+                  : 'max-w-0 opacity-0 scale-95 translate-x-3 pointer-events-none ml-0 overflow-hidden'
+              }`}
             >
-              <span>Start Saving</span>
-              <ArrowUpRight className="w-4 h-4 stroke-[3]" />
-            </Link>
+              <Link
+                to="/kyc"
+                className="whitespace-nowrap px-4 py-2.5 sm:px-5 sm:py-3 rounded-full bg-[#1B4B66] hover:bg-[#123448] text-white font-['Sora'] font-extrabold text-xs shadow-md transition-all flex items-center gap-1.5 hover:scale-105 cursor-pointer"
+              >
+                <span>Start Saving</span>
+                <ArrowUpRight className="w-4 h-4 stroke-[3]" />
+              </Link>
+            </div>
           </>
         )}
 
