@@ -1,18 +1,51 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShieldCheck, ArrowRight, Lock, CheckCircle2, Smartphone, Check, Delete } from 'lucide-react';
+import { ShieldCheck, ArrowRight, Lock, CheckCircle2, Smartphone, Check, Delete, Clock } from 'lucide-react';
 import { StackedDigitalCards } from '../components/StackedDigitalCards';
 import { store } from '../store';
 import confetti from 'canvas-confetti';
 
 export const PaymentSetupPage: React.FC = () => {
   const navigate = useNavigate();
+  const user = store.getCurrentUser();
+  const membership = store.getMembership();
+  const isPendingApproval = user.kycStatus === 'pending' || membership.status === 'KYC_PENDING';
+
   const [tab, setTab] = useState<'upi' | 'cards'>('upi');
-  const [vpa, setVpa] = useState('ananya@okicici');
-  const [phone, setPhone] = useState('98765 43210');
+  const [vpa, setVpa] = useState('');
+  const [phone, setPhone] = useState('');
   const [showPinModal, setShowPinModal] = useState(false);
   const [upiPin, setUpiPin] = useState('');
   const [isAuthorizing, setIsAuthorizing] = useState(false);
+
+  if (isPendingApproval) {
+    return (
+      <div className="min-h-screen bg-[#F7F5EF] text-[#1E2732] flex items-center justify-center p-4 sm:p-6">
+        <div className="bg-white border border-[#1B4B66]/20 rounded-[28px] p-6 sm:p-10 max-w-md w-full shadow-2xl text-center space-y-6 animate-fade-up">
+          <div className="w-16 h-16 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center mx-auto border-2 border-amber-300">
+            <Clock className="w-8 h-8 stroke-[2.5]" />
+          </div>
+          <div className="space-y-2">
+            <span className="px-3 py-1 bg-amber-100 text-amber-800 text-[11px] font-bold rounded-full">
+              KYC APPROVAL REQUIRED
+            </span>
+            <h2 className="font-['Sora'] font-extrabold text-xl text-[#1E2732]">
+              Account Under Employee Review
+            </h2>
+            <p className="text-xs text-[#5C6773] leading-relaxed">
+              Your account KYC is currently pending review by the Employee MRM team. Payment setup cannot be completed until your identity is verified and approved.
+            </p>
+          </div>
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="w-full py-3.5 rounded-[14px] bg-[#1B4B66] text-white font-['Sora'] font-bold text-xs shadow-md hover:bg-[#123448] transition-all cursor-pointer"
+          >
+            Back to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const presets = [
     { name: 'Google Pay', handle: 'ananya@okaxis', badge: 'GPay' },
@@ -59,8 +92,8 @@ export const PaymentSetupPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F7F5EF] text-[#1E2732]">
-      <div className="layout-container pt-10 pb-36 space-y-10">
+    <div className="min-h-[calc(100vh-70px)] bg-[#F7F5EF] text-[#1E2732] flex flex-col justify-center items-center py-6 sm:py-10 px-4 my-auto">
+      <div className="layout-container space-y-6 sm:space-y-8 w-full max-w-xl">
         {/* Header Section */}
         <div className="text-center space-y-3">
           <span className="text-xs font-bold uppercase tracking-widest text-[#1B4B66] flex items-center justify-center gap-2">
@@ -153,10 +186,18 @@ export const PaymentSetupPage: React.FC = () => {
                 />
               </div>
 
-              {/* Guarantee Box */}
-              <div className="bg-[#1F8A5F]/10 border border-[#1F8A5F]/30 rounded-[16px] p-4 text-xs text-[#1F8A5F] flex items-center gap-3 font-semibold">
-                <CheckCircle2 className="w-5 h-5 text-[#1F8A5F] shrink-0" />
-                <span>NPCI E-Mandate Limit: ₹1,000/mo. Debited automatically on 5th of every month.</span>
+              {/* Guarantee & NPCI GPay/Paytm Rules Box */}
+              <div className="bg-[#1F8A5F]/10 border border-[#1F8A5F]/30 rounded-[18px] p-4 text-xs text-[#1E2732] space-y-2.5">
+                <div className="flex items-center gap-2 text-[#1F8A5F] font-bold">
+                  <CheckCircle2 className="w-4 h-4 shrink-0 text-[#1F8A5F]" />
+                  <span>Official NPCI GPay & Paytm AutoPay Mandate Rules</span>
+                </div>
+
+                <ul className="space-y-1.5 text-[11px] text-[#5C6773] leading-relaxed list-disc list-inside pl-1 font-medium">
+                  <li><strong className="text-[#1E2732]">24-Hour Pre-Debit Notification:</strong> GPay/Paytm sends SMS alert 24h before monthly auto-debit.</li>
+                  <li><strong className="text-[#1E2732]">Zero-Penalty 5-Day Grace Window:</strong> Retries up to 3 times if bank servers are down without breaking your streak.</li>
+                  <li><strong className="text-[#1E2732]">100% Mandate Control:</strong> Pause or revoke your GPay/Paytm AutoPay mandate anytime in settings.</li>
+                </ul>
               </div>
             </div>
           ) : (

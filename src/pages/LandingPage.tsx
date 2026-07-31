@@ -12,12 +12,22 @@ export const LandingPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#F7F5EF] text-[#1E2732]">
       {/* Official Soft Ivory Theme Hero Section */}
-      <section className="relative pt-6 sm:pt-16 pb-12 md:pb-20 overflow-hidden">
+      <section className="relative pt-6 sm:pt-10 pb-12 md:pb-20 overflow-hidden">
         {/* Subtle background ambient radial glow */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-[#1B4B66]/10 rounded-full blur-[140px] pointer-events-none" />
         <div className="absolute top-1/3 left-1/4 w-[400px] h-[400px] bg-[#D4A62A]/15 rounded-full blur-[120px] pointer-events-none" />
 
         <div className="layout-container relative z-10 text-center space-y-6 md:space-y-8">
+          {/* Top Brand Logo Banner */}
+          <div className="flex items-center justify-center gap-2.5 pb-2">
+            <div className="w-9 h-9 rounded-2xl bg-[#1B4B66] text-[#D4A62A] flex items-center justify-center font-extrabold shadow-md">
+              <Shield className="w-5 h-5 stroke-[2.5]" />
+            </div>
+            <span className="font-['Sora'] font-extrabold text-xl tracking-tight text-[#1E2732]">
+              Samruddi<span className="text-[#1B4B66]">Save</span>
+            </span>
+          </div>
+
           {/* Top Pill Tag */}
           <div className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full bg-white border border-[#1B4B66]/20 text-[#1B4B66] text-[11px] sm:text-xs font-bold shadow-sm animate-fade-up">
             <Sparkles className="w-3.5 h-3.5 text-[#D4A62A]" />
@@ -66,7 +76,7 @@ export const LandingPage: React.FC = () => {
           <div className="pt-8 sm:pt-16 pb-4">
             <div className="flex items-end justify-start sm:justify-center -space-x-2 sm:-space-x-6 max-w-5xl mx-auto overflow-x-auto snap-x snap-mandatory py-6 scrollbar-none px-2 sm:px-0">
               {/* Card 1: Trust Blue (Flexible Saver) */}
-              <div className="snap-center w-40 sm:w-56 h-64 sm:h-84 rounded-3xl p-4 sm:p-5 bg-gradient-to-b from-[#1B4B66] via-[#123448] to-[#1E2732] text-white shadow-xl sm:transform sm:-rotate-12 hover:rotate-0 transition-transform duration-500 hover:z-30 shrink-0 border border-white/20 flex flex-col justify-between overflow-hidden relative group">
+              <div className="snap-center w-40 sm:w-56 h-64 sm:h-80 rounded-3xl p-4 sm:p-5 bg-gradient-to-b from-[#1B4B66] via-[#123448] to-[#1E2732] text-white shadow-xl sm:transform sm:-rotate-12 hover:rotate-0 transition-transform duration-500 hover:z-30 shrink-0 border border-white/20 flex flex-col justify-between overflow-hidden relative group">
                 <div>
                   <span className="text-[9px] sm:text-[10px] font-mono uppercase tracking-wider text-slate-300 block">Starter Saver</span>
                   <h4 className="font-['Sora'] font-extrabold text-base sm:text-xl text-white mt-0.5">Flexible Micro</h4>
@@ -87,7 +97,7 @@ export const LandingPage: React.FC = () => {
               </div>
 
               {/* Card 2: Celebration Gold (Gold Harvest) */}
-              <div className="snap-center w-40 sm:w-56 h-72 sm:h-92 rounded-3xl p-4 sm:p-5 bg-gradient-to-b from-[#D4A62A] via-amber-600 to-yellow-700 text-[#1E2732] shadow-xl sm:transform sm:-rotate-6 hover:rotate-0 transition-transform duration-500 hover:z-30 shrink-0 border border-yellow-300/80 flex flex-col justify-between overflow-hidden relative group">
+              <div className="snap-center w-40 sm:w-56 h-72 sm:h-96 rounded-3xl p-4 sm:p-5 bg-gradient-to-b from-[#D4A62A] via-amber-600 to-yellow-700 text-[#1E2732] shadow-xl sm:transform sm:-rotate-6 hover:rotate-0 transition-transform duration-500 hover:z-30 shrink-0 border border-yellow-300/80 flex flex-col justify-between overflow-hidden relative group">
                 <div>
                   <span className="text-[9px] sm:text-[10px] font-mono uppercase tracking-wider text-amber-950 font-bold block">Gold Harvest</span>
                   <h4 className="font-['Sora'] font-extrabold text-base sm:text-xl mt-0.5 text-amber-950">Gold Vault</h4>
@@ -108,7 +118,7 @@ export const LandingPage: React.FC = () => {
               </div>
 
               {/* Card 3: Center Elevated Trust Blue (Main Vault Card) */}
-              <div className="snap-center w-48 sm:w-64 h-84 sm:h-[420px] rounded-3xl p-5 sm:p-6 bg-gradient-to-b from-[#1B4B66] via-[#123448] to-[#1E2732] text-white shadow-glow-blue sm:transform sm:-translate-y-6 hover:translate-y-0 transition-transform duration-500 z-20 shrink-0 border-2 border-[#D4A62A]/60 flex flex-col justify-between overflow-hidden relative group">
+              <div className="snap-center w-48 sm:w-64 h-80 sm:h-[420px] rounded-3xl p-5 sm:p-6 bg-gradient-to-b from-[#1B4B66] via-[#123448] to-[#1E2732] text-white shadow-glow-blue sm:transform sm:-translate-y-6 hover:translate-y-0 transition-transform duration-500 z-20 shrink-0 border-2 border-[#D4A62A]/60 flex flex-col justify-between overflow-hidden relative group">
                 <div className="flex items-start justify-between">
                   <div>
                     <h4 className="font-['Sora'] font-extrabold text-xl sm:text-2xl text-white">Vault HUD</h4>
@@ -145,7 +155,7 @@ export const LandingPage: React.FC = () => {
               </div>
 
               {/* Card 4: Prosperity Green (Gift Hampers) */}
-              <div className="snap-center w-40 sm:w-56 h-72 sm:h-92 rounded-3xl p-4 sm:p-5 bg-gradient-to-b from-[#1F8A5F] via-teal-700 to-[#1E2732] text-white shadow-xl sm:transform sm:rotate-6 hover:rotate-0 transition-transform duration-500 hover:z-30 shrink-0 border border-emerald-400/40 flex flex-col justify-between overflow-hidden relative group">
+              <div className="snap-center w-40 sm:w-56 h-72 sm:h-96 rounded-3xl p-4 sm:p-5 bg-gradient-to-b from-[#1F8A5F] via-teal-700 to-[#1E2732] text-white shadow-xl sm:transform sm:rotate-6 hover:rotate-0 transition-transform duration-500 hover:z-30 shrink-0 border border-emerald-400/40 flex flex-col justify-between overflow-hidden relative group">
                 <div>
                   <span className="text-[9px] sm:text-[10px] font-mono uppercase tracking-wider text-emerald-100 block">Gift Hampers</span>
                   <h4 className="font-['Sora'] font-extrabold text-base sm:text-xl text-white mt-0.5">Luxury Reward</h4>
@@ -166,7 +176,7 @@ export const LandingPage: React.FC = () => {
               </div>
 
               {/* Card 5: Deep Charcoal Blue (Savings Circles) */}
-              <div className="snap-center w-40 sm:w-56 h-64 sm:h-84 rounded-3xl p-4 sm:p-5 bg-gradient-to-b from-[#1E2732] via-[#123448] to-[#1B4B66] text-white shadow-xl sm:transform sm:rotate-12 hover:rotate-0 transition-transform duration-500 hover:z-30 shrink-0 border border-white/20 flex flex-col justify-between overflow-hidden relative group">
+              <div className="snap-center w-40 sm:w-56 h-64 sm:h-80 rounded-3xl p-4 sm:p-5 bg-gradient-to-b from-[#1E2732] via-[#123448] to-[#1B4B66] text-white shadow-xl sm:transform sm:rotate-12 hover:rotate-0 transition-transform duration-500 hover:z-30 shrink-0 border border-white/20 flex flex-col justify-between overflow-hidden relative group">
                 <div>
                   <span className="text-[9px] sm:text-[10px] font-mono uppercase tracking-wider text-slate-300 block">Savings Circles</span>
                   <h4 className="font-['Sora'] font-extrabold text-base sm:text-xl text-white mt-0.5">Group Circle</h4>

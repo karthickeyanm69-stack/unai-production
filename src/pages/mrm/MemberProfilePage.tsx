@@ -214,7 +214,7 @@ export const MemberProfilePage: React.FC = () => {
                         <td className="py-3.5 font-mono font-extrabold text-[#1E2732]">Month #{c.cycleNumber}</td>
                         <td className="py-3.5 text-[#5C6773]">{c.dueDate}</td>
                         <td className="py-3.5 text-[#5C6773] font-mono">{c.paidDate || '—'}</td>
-                        <td className="py-3.5 font-mono font-bold text-[#1E2732]">₹{c.amount.toLocaleString('en-IN')}</td>
+                        <td className="py-3.5 font-mono font-bold text-[#1E2732]">₹{(c.amountInPaise / 100).toLocaleString('en-IN')}</td>
                         <td className="py-3.5 font-mono text-[10px] text-[#1B4B66]">{c.paymentGatewayRef || 'Pending AutoPay'}</td>
                         <td className="py-3.5 text-right">
                           {c.status === 'paid' ? (

@@ -31,22 +31,109 @@ export const DashboardPage: React.FC = () => {
     return unsub;
   }, []);
 
+  // Check if member is pending Higher Officer approval
+  const isPendingApproval = user.kycStatus === 'pending' || membership.status === 'KYC_PENDING';
+
+  if (isPendingApproval) {
+    return (
+      <div className="min-h-screen bg-[#F7F5EF] text-[#1E2732] flex items-center justify-center p-4 sm:p-6 pb-24">
+        <div className="bg-white border border-[#1B4B66]/15 rounded-[32px] p-6 sm:p-10 max-w-2xl w-full space-y-8 shadow-2xl animate-fade-up text-center">
+          
+          <div className="w-16 h-16 rounded-full bg-[#D4A62A]/15 text-[#D4A62A] flex items-center justify-center mx-auto border-2 border-[#D4A62A]/40 shadow-inner">
+            <Clock className="w-8 h-8 stroke-[2.5]" />
+          </div>
+
+          <div className="space-y-2">
+            <span className="inline-block px-3.5 py-1 rounded-full bg-[#1B4B66]/10 text-[#1B4B66] font-mono font-bold text-xs">
+              ACCOUNT STATUS: PENDING HIGHER OFFICER APPROVAL
+            </span>
+            <h1 className="font-['Sora'] font-extrabold text-2xl sm:text-3xl text-[#1E2732]">
+              Welcome {user.fullName}! Your Application is Under Review
+            </h1>
+            <p className="text-xs sm:text-sm text-[#5C6773] max-w-lg mx-auto leading-relaxed">
+              Your goal savings account registration & AI document verification has been submitted to the **Higher Officer (Priya Verma - MRM Desk)** for final compliance review.
+            </p>
+          </div>
+
+          {/* Verification Lifecycle Timeline */}
+          <div className="bg-[#F8FAFC] border border-slate-200 rounded-[24px] p-6 text-left space-y-4">
+            <h3 className="font-['Sora'] font-bold text-xs uppercase tracking-wider text-[#1B4B66]">Application Compliance Verification</h3>
+            
+            <div className="space-y-3 font-semibold text-xs">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-white border border-slate-200 text-[#1F8A5F]">
+                <div className="flex items-center gap-2.5">
+                  <CheckCircle2 className="w-4 h-4 text-[#1F8A5F]" />
+                  <span>1. User Profile & Security PIN</span>
+                </div>
+                <span className="font-mono text-[11px] font-bold">COMPLETED</span>
+              </div>
+
+              <div className="flex items-center justify-between p-3 rounded-xl bg-white border border-slate-200 text-[#1F8A5F]">
+                <div className="flex items-center gap-2.5">
+                  <CheckCircle2 className="w-4 h-4 text-[#1F8A5F]" />
+                  <span>2. AI Document OCR Verification</span>
+                </div>
+                <span className="font-mono text-[11px] font-bold">99.4% MATCHED</span>
+              </div>
+
+              <div className="flex items-center justify-between p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 animate-pulse">
+                <div className="flex items-center gap-2.5">
+                  <Clock className="w-4 h-4 text-amber-600" />
+                  <span>3. Higher Officer Review (Priya Verma - MRM Desk)</span>
+                </div>
+                <span className="font-mono text-[11px] font-bold">PENDING APPROVAL</span>
+              </div>
+            </div>
+          </div>
+
+          {/* SMS Alert Notice */}
+          <div className="bg-[#1B4B66]/5 border border-[#1B4B66]/15 rounded-2xl p-4 text-xs text-[#1E2732] space-y-1">
+            <p className="font-bold flex items-center justify-center gap-1.5 text-[#1B4B66]">
+              <ShieldCheck className="w-4 h-4 text-[#1B4B66]" />
+              <span>Real-Time SMS & WhatsApp Dispatch</span>
+            </p>
+            <p className="text-[#5C6773]">
+              You will receive an instant notification at <span className="font-mono font-bold text-[#1B4B66]">{user.phone || '+91 90422 85132'}</span> the moment the Higher Officer approves your wallet.
+            </p>
+          </div>
+
+          {/* Real-time Application Status Actions */}
+          <div className="pt-2 flex flex-col sm:flex-row gap-3">
+            <button
+              onClick={() => {
+                setMembership(store.getMembership());
+              }}
+              className="w-full bg-[#1B4B66] hover:bg-[#123448] text-white font-['Sora'] font-extrabold text-xs py-3.5 px-5 rounded-[14px] shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
+            >
+              <Clock className="w-4 h-4 text-[#D4A62A]" />
+              <span>Refresh Application Status</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#F7F5EF] text-[#1E2732] pb-36">
       <div className="layout-container pt-8 sm:pt-12 space-y-8">
-        {/* Grace Period Alert Banner (if active) */}
+        {/* Grace Period Alert Banner (Mobile Phone & Desktop Responsive) */}
         {membership.status === 'GRACE_PERIOD' && (
-          <div className="bg-[#FDF6E2] border-2 border-[#DB9A2C] rounded-[24px] p-6 text-[#1E2732] flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-premium animate-fade-up">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-[12px] bg-[#DB9A2C] text-white flex items-center justify-center shrink-0 shadow-md">
+          <div className="bg-[#FDF6E2] border border-[#DB9A2C] rounded-[20px] p-4 text-[#1E2732] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md animate-fade-up">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-[14px] bg-[#DB9A2C] text-white flex items-center justify-center shrink-0 shadow-sm">
                 <Clock className="w-5 h-5 stroke-[2.5]" />
               </div>
               <div>
                 <p className="font-['Sora'] font-extrabold text-sm text-[#1E2732]">5-Day Grace Period Notice</p>
-                <p className="text-xs text-[#5C6773]">Make your monthly contribution to protect your 8-month streak!</p>
+                <p className="text-xs text-[#5C6773] leading-tight">Make your monthly contribution to protect your 8-month streak!</p>
               </div>
             </div>
-            <Link to="/pay" className="bg-[#DB9A2C] hover:bg-amber-600 text-white font-bold text-xs px-5 py-3 rounded-[12px] text-center shadow-md transition-all">
+            <Link
+              to="/pay"
+              className="w-full sm:w-auto bg-[#DB9A2C] hover:bg-amber-600 text-white font-extrabold text-xs px-5 py-2.5 rounded-[12px] text-center shadow-sm transition-all shrink-0"
+            >
               Pay Now to Cure Grace
             </Link>
           </div>
@@ -56,12 +143,16 @@ export const DashboardPage: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Main Left Column (Reference Image Wallet Layout) */}
           <div className="lg:col-span-7 space-y-6">
-            {/* Top Greeting Header (Reference Image Style) */}
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs sm:text-sm text-[#5C6773] font-medium">
-                  Hi <span className="font-bold text-[#1E2732]">{user.fullName.split(' ')[0]}</span>! Welcome to your wallet
-                </p>
+            {/* Top Greeting & Brand Header */}
+            <div className="flex items-center justify-between pb-1">
+              <div className="flex items-center gap-3">
+                <img src={user.avatar} alt={user.fullName} className="w-10 h-10 rounded-full object-cover border-2 border-[#1B4B66] shadow-sm" />
+                <div>
+                  <p className="text-xs sm:text-sm text-[#5C6773] font-medium">
+                    Hi <span className="font-bold text-[#1E2732]">{user.fullName.split(' ')[0]}</span>! Welcome to your wallet
+                  </p>
+                  <p className="text-[10px] text-[#1F8A5F] font-extrabold capitalize">Active Saver · RBI Escrow Custody</p>
+                </div>
               </div>
               <div className="flex items-center space-x-2">
                 <button
@@ -93,7 +184,7 @@ export const DashboardPage: React.FC = () => {
                 </p>
                 <div className="flex items-baseline justify-center space-x-1">
                   <span className="text-4xl sm:text-5xl font-extrabold font-mono text-[#1E2732] tracking-tight tabular-nums">
-                    ₹{membership.totalPaid.toLocaleString('en-IN')}
+                    ₹{(membership.totalPaidInPaise / 100).toLocaleString('en-IN')}
                   </span>
                   <span className="text-lg font-mono font-bold text-[#5C6773]">.00</span>
                 </div>

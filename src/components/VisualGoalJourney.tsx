@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Gift, Sparkles, CheckCircle2, Flame, Trophy, Lock, X, ExternalLink, ArrowRight, ShieldCheck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { store } from '../store';
@@ -15,6 +15,15 @@ export const VisualGoalJourney: React.FC<VisualGoalJourneyProps> = ({ membership
   const currentStreak = activeMembership?.currentStreak || 8;
 
   const [expandedMonth, setExpandedMonth] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (expandedMonth !== null) {
+      store.setModalOpen(true);
+      return () => {
+        store.setModalOpen(false);
+      };
+    }
+  }, [expandedMonth]);
 
   const monthDetailsMap: Record<number, { date: string; ref: string; reward: string; detail: string }> = {
     1: { date: 'Jan 5, 2026', ref: 'UPI_NPCI_8912', reward: 'Goal Journey Started', detail: '₹1,000 deposited in escrow account. Account activated.' },

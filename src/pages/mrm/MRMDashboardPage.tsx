@@ -50,7 +50,7 @@ export const MRMDashboardPage: React.FC = () => {
       <div className="layout-container pt-8 sm:pt-10 pb-36 space-y-8">
         {/* Toast Alert */}
         {toast && (
-          <div className="fixed top-20 right-6 z-50 bg-[#1B4B66] text-white px-6 py-3.5 rounded-[16px] shadow-2xl font-['Sora'] font-extrabold text-xs flex items-center gap-2 border-2 border-[#D4A62A] animate-fade-up">
+          <div className="fixed top-20 left-4 right-4 sm:left-auto sm:right-6 z-50 bg-[#1B4B66] text-white px-6 py-3.5 rounded-[16px] shadow-2xl font-['Sora'] font-extrabold text-xs flex items-center gap-2 border-2 border-[#D4A62A] animate-fade-up">
             <CheckCircle2 className="w-4 h-4 text-[#D4A62A]" />
             <span>{toast}</span>
           </div>
@@ -163,7 +163,7 @@ export const MRMDashboardPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 overflow-x-auto pb-4">
+          <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-thin">
             {pipelineColumns.map((col) => {
               const columnMembers = profiles.filter((p) => {
                 const stage = p.pipelineStage || 'PAYMENT_ACTIVE';
@@ -175,7 +175,7 @@ export const MRMDashboardPage: React.FC = () => {
               return (
                 <div
                   key={col.id}
-                  className="bg-[#F8FAFC] border border-slate-200 rounded-[22px] p-4 space-y-3 min-w-[260px] flex flex-col justify-between"
+                  className="bg-[#F8FAFC] border border-slate-200 rounded-[22px] p-4 space-y-3 w-72 shrink-0 sm:w-80 snap-start flex flex-col justify-between"
                 >
                   <div className="flex items-center justify-between border-b border-slate-200 pb-2.5">
                     <span className={`px-3 py-1 rounded-full text-[10px] font-extrabold border ${col.color}`}>
