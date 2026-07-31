@@ -463,6 +463,61 @@ export const EmployeeDashboard: React.FC = () => {
           </div>
         )}
 
+        {/* Module 6: Gift Hamper Admin Allocation */}
+        {activeModule === 'hampers' && (
+          <div className="bg-white border border-[#1B4B66]/15 rounded-[28px] p-6 sm:p-10 space-y-6 shadow-premium animate-fade-up">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div>
+                <h3 className="font-['Sora'] font-extrabold text-xl text-[#1E2732]">Maturity Gift Hamper Allocations</h3>
+                <p className="text-xs text-[#5C6773]">Select and assign gift hampers to members for Month 12 maturity dispatch</p>
+              </div>
+              <span className="px-3 py-1 bg-[#1B4B66]/10 text-[#1B4B66] font-bold text-xs rounded-full">
+                {store.getHampers().length} Hampers in Catalogue
+              </span>
+            </div>
+
+            <div className="space-y-4">
+              {profiles.filter((p) => p.role === 'member').map((m) => {
+                const currentHamper = store.getHampers().find((h) => h.id === m.allocatedHamperId);
+                return (
+                  <div key={m.id} className="p-5 rounded-[20px] bg-[#F8FAFC] border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="font-bold text-base text-[#1E2732]">{m.fullName}</p>
+                        <span className="text-[10px] font-mono font-bold text-[#5C6773] bg-slate-200 px-2 py-0.5 rounded">ID: {m.id}</span>
+                      </div>
+                      <p className="text-xs text-[#5C6773] mt-0.5">
+                        Allocated Hamper: <span className="font-bold text-[#1B4B66]">{currentHamper ? currentHamper.title : 'None Assigned (Pending)'}</span>
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <select
+                        value={m.allocatedHamperId || ''}
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            store.allocateHamperToMember(m.id, e.target.value, currentEmployee.fullName);
+                            setProfiles(store.getProfiles());
+                            triggerToast(`Allocated Gift Hamper to ${m.fullName}!`);
+                          }
+                        }}
+                        className="px-3.5 py-2 rounded-[12px] bg-white border border-slate-300 font-bold text-xs text-[#1E2732] focus:outline-none focus:border-[#1B4B66]"
+                      >
+                        <option value="">-- Select Gift Hamper --</option>
+                        {store.getHampers().map((h) => (
+                          <option key={h.id} value={h.id}>
+                            {h.title} (₹{h.estimatedValue})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Module 8: Member Activity Timeline */}
         {activeModule === 'timeline' && (
           <div className="bg-white border border-[#1B4B66]/15 rounded-[28px] p-6 sm:p-10 space-y-6 shadow-premium animate-fade-up">

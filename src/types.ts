@@ -45,6 +45,10 @@ export interface Profile {
   assignedEmployeeId?: string;
   assignedEmployeeName?: string;
   pipelineStage?: PipelineStage;
+  allocatedHamperId?: string;
+  allocatedHamperTitle?: string;
+  allocatedByAdminName?: string;
+  allocatedAt?: string;
 }
 
 export interface Employee {
@@ -119,6 +123,7 @@ export interface HamperItem {
   imageUrl: string;
   inStock: boolean;
   stockStatus: HamperStockStatus;
+  items?: { name: string; approxValue: number }[];
   vendorName?: string;
   stockCount?: number;
 }

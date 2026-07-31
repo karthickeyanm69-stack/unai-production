@@ -401,6 +401,11 @@ class StateStore {
       stockStatus: 'available',
       vendorName: 'Croma Enterprise Logistics',
       stockCount: 142,
+      items: [
+        { name: 'Wireless Bluetooth Earbuds', approxValue: 899 },
+        { name: 'Smart Fitness Tracker Band', approxValue: 699 },
+        { name: '10,000mAh Power Bank', approxValue: 402 },
+      ],
     },
     {
       id: 'hamp_wellness',
@@ -413,6 +418,11 @@ class StateStore {
       stockStatus: 'low_stock',
       vendorName: 'Kama Ayurveda Direct',
       stockCount: 12,
+      items: [
+        { name: 'Organic Essential Oils Set', approxValue: 799 },
+        { name: 'Artisan Aromatherapy Diffuser', approxValue: 699 },
+        { name: 'Pure Silk Eye Mask & Bath Salts', approxValue: 502 },
+      ],
     },
     {
       id: 'hamp_fashion',
@@ -425,6 +435,11 @@ class StateStore {
       stockStatus: 'available',
       vendorName: 'FabIndia Craft Logistics',
       stockCount: 65,
+      items: [
+        { name: 'Handcrafted Pure Silk Stole', approxValue: 999 },
+        { name: 'Luxury Analog Wrist Watch', approxValue: 699 },
+        { name: 'Designer Leather Accessory Set', approxValue: 302 },
+      ],
     },
     {
       id: 'hamp_home',
@@ -437,6 +452,11 @@ class StateStore {
       stockStatus: 'out_of_stock',
       vendorName: 'Urban Living Crafts',
       stockCount: 0,
+      items: [
+        { name: 'Traditional Brass Diya Oil Lamps', approxValue: 799 },
+        { name: 'Handwoven Silk Table Runner', approxValue: 699 },
+        { name: 'Scented Soy Candles & Brass Bowl', approxValue: 502 },
+      ],
     },
   ];
 
@@ -956,6 +976,37 @@ class StateStore {
     this.selectedHamperId = id;
     this.logAuditAction('SELECT_HAMPER', 'Rewards', `Member locked in gift hamper ID ${id}`);
     this.notify();
+  }
+
+  allocateHamperToMember(userId: string, hamperId: string, adminName: string = 'Admin Officer'): boolean {
+    const user = this.profiles.find((p) => p.id === userId);
+    const hamper = this.hampers.find((h) => h.id === hamperId);
+    if (user && hamper) {
+      user.allocatedHamperId = hamper.id;
+      user.allocatedHamperTitle = hamper.title;
+      user.allocatedByAdminName = adminName;
+      user.allocatedAt = new Date().toISOString().split('T')[0];
+      this.saveSession();
+      this.logAuditAction('ALLOCATE_HAMPER', 'Rewards', `Admin ${adminName} allocated gift hamper "${hamper.title}" to member ${user.fullName} (${user.id})`);
+      this.notify();
+      return true;
+    }
+    return false;
+  }
+
+  getAllocatedHamperForUser(userId: string): { hamper: HamperItem | null; allocatedAt?: string; adminName?: string } {
+    const user = this.profiles.find((p) => p.id === userId);
+    if (user?.allocatedHamperId) {
+      const hamper = this.hampers.find((h) => h.id === user.allocatedHamperId);
+      if (hamper) {
+        return {
+          hamper,
+          allocatedAt: user.allocatedAt,
+          adminName: user.allocatedByAdminName,
+        };
+      }
+    }
+    return { hamper: null };
   }
 
   getCircles(): Circle[] {
