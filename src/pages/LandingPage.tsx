@@ -22,7 +22,10 @@ export const LandingPage: React.FC = () => {
     let closestIndex = 0;
     let minDistance = Infinity;
 
-    children.forEach((child, idx) => {
+    const cardChildren = children.filter((child) => child.dataset.cardIdx !== undefined);
+
+    cardChildren.forEach((child) => {
+      const idx = Number(child.dataset.cardIdx);
       const childCenter = child.offsetLeft + child.clientWidth / 2;
       const distance = Math.abs(containerCenter - childCenter);
       if (distance < minDistance) {
@@ -34,12 +37,12 @@ export const LandingPage: React.FC = () => {
   };
 
   const scrollToCard = (index: number) => {
+    setActiveCardIndex(index);
     if (!scrollContainerRef.current) return;
     const container = scrollContainerRef.current;
-    const children = Array.from(container.children) as HTMLElement[];
-    if (children[index]) {
-      const child = children[index];
-      const targetScroll = child.offsetLeft - (container.clientWidth - child.clientWidth) / 2;
+    const targetCard = container.querySelector(`[data-card-idx="${index}"]`) as HTMLElement;
+    if (targetCard) {
+      const targetScroll = targetCard.offsetLeft - (container.clientWidth - targetCard.clientWidth) / 2;
       container.scrollTo({ left: targetScroll, behavior: 'smooth' });
     }
   };
@@ -142,11 +145,11 @@ export const LandingPage: React.FC = () => {
             </Link>
           </div>
 
-          {/* Interactive Cards Slider & Smooth Animation Showcase */}
+          {/* True Viewport Full-Bleed 3D Fan-Out Deck Showcase (w-screen breakout, 0px side gaps) */}
           <div className="pt-6 sm:pt-10 pb-4 w-full relative">
             
-            {/* Scroll Navigation Arrows */}
-            <div className="flex items-center justify-center gap-3 mb-3">
+            {/* Scroll Navigation Controls */}
+            <div className="flex items-center justify-center gap-3 mb-4">
               <button
                 type="button"
                 onClick={() => scrollToCard(Math.max(0, activeCardIndex - 1))}
@@ -180,27 +183,37 @@ export const LandingPage: React.FC = () => {
               </button>
             </div>
 
-            {/* Scroll Container with Generous Padding to Prevent Side Edge Truncation */}
+            {/* True Viewport 100vw Full-Bleed Container (0px Side Gaps, Zero Padding) */}
             <div
               ref={scrollContainerRef}
               onScroll={handleCardsScroll}
-              className="flex items-center gap-4 sm:gap-6 max-w-full mx-auto overflow-x-auto snap-x snap-mandatory py-8 scrollbar-none px-12 sm:px-24 md:px-36 scroll-px-12 sm:scroll-px-24"
+              className="flex items-end justify-start sm:justify-center -space-x-4 sm:-space-x-8 md:-space-x-10 w-screen relative left-1/2 -translate-x-1/2 overflow-x-auto snap-x snap-mandatory py-10 scrollbar-none px-0"
               style={{ scrollBehavior: 'smooth' }}
             >
               {cardsData.map((card, i) => {
-                const isActive = activeCardIndex === i;
+                const distance = Math.abs(i - activeCardIndex);
+                const isCenter = distance === 0;
+
+                // Dynamic 3D Fan-Out transforms: Middle Big in front (z-30), Sides Shorter stepping back (z-20, z-10)
+                let zIndexClass = 'z-10';
+                let transformClass = 'scale-[0.82] sm:scale-90 opacity-75 translate-y-4';
+
+                if (isCenter) {
+                  zIndexClass = 'z-30';
+                  transformClass = 'scale-100 sm:scale-115 -translate-y-4 shadow-2xl opacity-100 ring-4 ring-[#D4A62A]';
+                } else if (distance === 1) {
+                  zIndexClass = 'z-20';
+                  transformClass = 'scale-[0.92] sm:scale-95 translate-y-1 opacity-90 hover:opacity-100';
+                }
 
                 return (
                   <div
                     key={card.id}
+                    data-card-idx={i}
                     onClick={() => scrollToCard(i)}
-                    className={`snap-center w-52 sm:w-60 h-[360px] sm:h-[400px] rounded-[28px] bg-gradient-to-b ${card.gradient} shadow-xl transition-all duration-300 shrink-0 border ${card.border} relative cursor-pointer ${
-                      isActive
-                        ? 'scale-105 sm:scale-110 shadow-2xl z-30 ring-4 ring-[#D4A62A]/60'
-                        : 'scale-95 opacity-85 hover:opacity-100 z-10'
-                    }`}
+                    className={`snap-center w-[72vw] max-w-[220px] sm:w-56 h-[350px] sm:h-[400px] rounded-[28px] bg-gradient-to-b ${card.gradient} transition-all duration-500 shrink-0 border ${card.border} relative cursor-pointer ${zIndexClass} ${transformClass}`}
                   >
-                    <div className="flex flex-col justify-between h-full p-5 sm:p-6 text-white overflow-hidden relative select-none">
+                    <div className="flex flex-col justify-between h-full p-4 sm:p-6 text-white overflow-hidden relative select-none">
                       
                       {/* Top Card Header */}
                       <div className="space-y-0.5 z-10 shrink-0 text-left">
@@ -214,8 +227,8 @@ export const LandingPage: React.FC = () => {
                         <img
                           src={card.img}
                           alt={card.alt}
-                          className={`max-h-full max-w-full object-contain drop-shadow-2xl transition-all duration-300 ${
-                            isActive ? 'scale-110 sm:scale-125' : 'scale-95'
+                          className={`max-h-full max-w-full object-contain drop-shadow-2xl transition-all duration-500 ${
+                            isCenter ? 'scale-110 sm:scale-125' : 'scale-95'
                           }`}
                           onError={(e) => {
                             e.currentTarget.src = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&auto=format&fit=crop&q=80';
@@ -226,8 +239,8 @@ export const LandingPage: React.FC = () => {
                       {/* Bottom Footer Badge / Progress Bar */}
                       <div className="shrink-0 z-10 pt-1">
                         {card.isCenter ? (
-                          <div className="bg-black/50 backdrop-blur p-3 rounded-2xl text-white space-y-1.5 border border-white/25 shadow-md">
-                            <div className="flex justify-between text-[11px] font-bold">
+                          <div className="bg-black/50 backdrop-blur p-2.5 sm:p-3 rounded-2xl text-white space-y-1.5 border border-white/25 shadow-md">
+                            <div className="flex justify-between text-[10px] sm:text-[11px] font-bold">
                               <span className="text-[#1F8A5F]">Escrow Status</span>
                               <span className="text-[#D4A62A]">Month 8/12</span>
                             </div>
@@ -237,7 +250,7 @@ export const LandingPage: React.FC = () => {
                           </div>
                         ) : (
                           <div className={`${card.footerBg} backdrop-blur rounded-2xl p-2.5 text-center border border-white/20 shadow-md`}>
-                            <span className="text-[11px] font-bold">{card.footer}</span>
+                            <span className="text-[10px] sm:text-[11px] font-bold">{card.footer}</span>
                           </div>
                         )}
                       </div>
@@ -246,7 +259,7 @@ export const LandingPage: React.FC = () => {
                 );
               })}
             </div>
-            <p className="text-[11px] text-[#5C6773] font-bold text-center mt-1">← Tap arrows or scroll cards to inspect savings tiers →</p>
+            <p className="text-[11px] text-[#5C6773] font-bold text-center mt-1">← Tap arrows or cards to bring any savings tier to the front →</p>
           </div>
         </section>
 
