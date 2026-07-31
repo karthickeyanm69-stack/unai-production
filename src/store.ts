@@ -822,6 +822,19 @@ class StateStore {
     return null;
   }
 
+  updateMandateStatus(status: 'ACTIVE' | 'PENDING' | 'INACTIVE', vpaOrCard?: string) {
+    const mem = this.getMembership();
+    if (mem) {
+      mem.mandateActive = (status === 'ACTIVE');
+      if (status === 'ACTIVE') {
+        mem.status = 'ACTIVE_SAVER';
+      }
+      this.saveSession();
+      this.logAuditAction('MANDATE_UPDATE', 'Payment', `NPCI AutoPay mandate authorized for user ${this.currentUserId} via ${vpaOrCard || 'UPI/Card'}`);
+      this.notify();
+    }
+  }
+
   getProfiles(): Profile[] {
     return this.profiles;
   }
