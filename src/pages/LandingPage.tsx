@@ -36,18 +36,6 @@ export const LandingPage: React.FC = () => {
 
           {/* Main Headline with Serif Italic Flourish */}
           <div className="relative max-w-4xl mx-auto space-y-2">
-            {/* Floating Left User Badge Pill */}
-            <div className="hidden lg:flex items-center gap-1.5 absolute -left-12 top-6 bg-[#1F8A5F] text-white text-xs font-extrabold px-3.5 py-1.5 rounded-full shadow-lg animate-pulse">
-              <MousePointer className="w-3.5 h-3.5 fill-white stroke-none" />
-              <span>Ananya (🔥 8m streak)</span>
-            </div>
-
-            {/* Floating Right User Badge Pill */}
-            <div className="hidden lg:flex items-center gap-1.5 absolute -right-12 top-20 bg-[#1B4B66] text-white text-xs font-extrabold px-3.5 py-1.5 rounded-full shadow-lg animate-pulse">
-              <MousePointer className="w-3.5 h-3.5 fill-white stroke-none" />
-              <span>Pavlo (₹2,000/mo)</span>
-            </div>
-
             <h1 className="font-['Sora'] text-3xl sm:text-5xl md:text-7xl font-extrabold tracking-tight text-[#1E2732] leading-[1.15]">
               Save Small Monthly. <br />
               <span className="font-serif-italic font-normal text-3xl sm:text-5xl md:text-7xl bg-gradient-to-r from-[#D4A62A] via-amber-600 to-[#1B4B66] bg-clip-text text-transparent">
