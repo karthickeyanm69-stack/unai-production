@@ -43,10 +43,13 @@ export const EmployeeDashboard: React.FC = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [profiles, setProfiles] = useState<Profile[]>(store.getProfiles());
   const [search, setSearch] = useState('');
-  const [filterAssignedOnly, setFilterAssignedOnly] = useState(true);
+  const [filterAssignedOnly, setFilterAssignedOnly] = useState(false);
   const [selectedMember, setSelectedMember] = useState<Profile | null>(null);
   const [kycRejectReason, setKycRejectReason] = useState('');
   const [toast, setToast] = useState<string | null>(null);
+
+  // Dynamic calculation for pending member approvals
+  const pendingKycCount = profiles.filter((p) => p.role === 'member' && p.kycStatus === 'pending').length;
 
   // Manual Offline Payment Entry State
   const [manualCustomerInput, setManualCustomerInput] = useState<string>('Rahul Verma');
@@ -75,7 +78,7 @@ export const EmployeeDashboard: React.FC = () => {
     store.requestKYCResubmission(userId, kycRejectReason);
     setKycRejectReason('');
     setProfiles(store.getProfiles());
-    triggerToast('Resubmission request sent to member via WhatsApp & SMS!');
+    triggerToast('Requested document resubmission from Member.');
   };
 
   const handleMakerVerify = (payoutId: string) => {
@@ -85,8 +88,8 @@ export const EmployeeDashboard: React.FC = () => {
 
   const navItems = [
     { id: 'overview', label: 'Overview', icon: TrendingUp },
-    { id: 'members', label: 'Assigned Members', icon: Users },
-    { id: 'kyc', label: 'Member Approvals', icon: ShieldCheck, badge: 1 },
+    { id: 'members', label: 'All Members Directory', icon: Users },
+    { id: 'kyc', label: 'Member Approvals', icon: ShieldCheck, badge: pendingKycCount },
     { id: 'payments', label: 'Record Offline Payments', icon: CreditCard },
     { id: 'grace', label: 'Grace Management', icon: AlertTriangle, badge: 1 },
     { id: 'hampers', label: 'Hamper Tracking', icon: Gift, badge: 1 },
@@ -108,8 +111,7 @@ export const EmployeeDashboard: React.FC = () => {
   const displayedProfiles = profiles.filter((p) => {
     const isMemberRole = p.role === 'member';
     const matchesSearch = p.fullName.toLowerCase().includes(search.toLowerCase()) || p.phone.includes(search);
-    const matchesAssigned = !filterAssignedOnly || p.assignedEmployeeId === currentEmployee.id || currentEmployee.role === 'employee';
-    return isMemberRole && matchesSearch && matchesAssigned;
+    return isMemberRole && matchesSearch;
   });
 
   return (
@@ -122,12 +124,20 @@ export const EmployeeDashboard: React.FC = () => {
         </div>
       )}
 
+      {/* Mobile Sidebar Backdrop Overlay */}
+      {mobileSidebarOpen && (
+        <div
+          onClick={() => setMobileSidebarOpen(false)}
+          className="fixed inset-0 z-30 bg-black/50 lg:hidden backdrop-blur-xs transition-opacity"
+        />
+      )}
+
       {/* Top Mobile Header */}
       <header className="lg:hidden sticky top-0 z-40 bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between shadow-sm">
         <div className="flex items-center space-x-3">
           <button
             onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-            className="p-2 rounded-xl bg-[#F7F5EF] text-[#1B4B66] hover:bg-slate-200 transition-all"
+            className="p-2.5 rounded-xl bg-[#F7F5EF] text-[#1B4B66] hover:bg-slate-200 transition-all min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
           >
             {mobileSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -135,7 +145,7 @@ export const EmployeeDashboard: React.FC = () => {
             Member<span className="text-[#1B4B66]">Ops</span>
           </span>
         </div>
-        <span className="text-xs font-bold text-[#1B4B66] bg-[#1B4B66]/10 px-3 py-1 rounded-full">
+        <span className="text-xs font-bold text-[#1B4B66] bg-[#1B4B66]/10 px-3 py-1.5 rounded-full">
           {currentEmployee.fullName}
         </span>
       </header>
@@ -215,7 +225,7 @@ export const EmployeeDashboard: React.FC = () => {
       </aside>
 
       {/* Main Operational Content */}
-      <main className="flex-1 p-4 sm:p-8 space-y-8 max-w-7xl mx-auto w-full">
+      <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 max-w-7xl mx-auto w-full">
         {/* Top Filter Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
           <div>
@@ -226,26 +236,15 @@ export const EmployeeDashboard: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => setFilterAssignedOnly(!filterAssignedOnly)}
-              className={`px-3.5 py-2 rounded-[12px] text-xs font-bold transition-all border ${
-                filterAssignedOnly
-                  ? 'bg-[#1B4B66] text-white border-[#1B4B66]'
-                  : 'bg-white text-[#5C6773] border-slate-300'
-              }`}
-            >
-              {filterAssignedOnly ? 'Showing My Assigned Members' : 'Showing All Members'}
-            </button>
-
             <div className="relative w-full sm:w-56">
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search Member..."
-                className="w-full pl-9 pr-4 py-2 rounded-[12px] bg-white border border-slate-200 text-xs text-[#1E2732] focus:outline-none focus:border-[#1B4B66]"
+                className="w-full pl-9 pr-4 py-2.5 rounded-[12px] bg-white border border-slate-200 text-base sm:text-xs text-[#1E2732] focus:outline-none focus:border-[#1B4B66] min-h-[44px]"
               />
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3.5" />
             </div>
           </div>
         </div>
@@ -255,25 +254,25 @@ export const EmployeeDashboard: React.FC = () => {
           <div className="space-y-8 animate-fade-up">
             {/* KPI Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div className="bg-white border border-[#1B4B66]/15 rounded-[22px] p-5 space-y-2 shadow-premium">
-                <span className="text-[11px] text-[#5C6773] font-bold uppercase tracking-wider block">Assigned Portfolio</span>
+              <div className="bg-white border border-[#1B4B66]/15 rounded-[22px] p-3.5 sm:p-5 space-y-2 shadow-premium">
+                <span className="text-[11px] text-[#5C6773] font-bold uppercase tracking-wider block">Total Registered Members</span>
                 <span className="text-3xl font-extrabold font-mono text-[#1B4B66]">{displayedProfiles.length}</span>
                 <p className="text-[10px] text-[#1F8A5F] font-bold">Active Members</p>
               </div>
 
-              <div className="bg-white border border-[#D4A62A]/40 rounded-[22px] p-5 space-y-2 shadow-premium">
+              <div className="bg-white border border-[#D4A62A]/40 rounded-[22px] p-3.5 sm:p-5 space-y-2 shadow-premium">
                 <span className="text-[11px] text-[#5C6773] font-bold uppercase tracking-wider block">Pending Member Approvals</span>
-                <span className="text-3xl font-extrabold font-mono text-[#D4A62A]">1</span>
+                <span className="text-3xl font-extrabold font-mono text-[#D4A62A]">{pendingKycCount}</span>
                 <p className="text-[10px] text-[#5C6773]">Waiting Review</p>
               </div>
 
-              <div className="bg-white border border-[#DB9A2C]/30 rounded-[22px] p-5 space-y-2 shadow-premium">
+              <div className="bg-white border border-[#DB9A2C]/30 rounded-[22px] p-3.5 sm:p-5 space-y-2 shadow-premium">
                 <span className="text-[11px] text-[#5C6773] font-bold uppercase tracking-wider block">Grace Period 5-Day Alert</span>
                 <span className="text-3xl font-extrabold font-mono text-[#DB9A2C]">1</span>
                 <p className="text-[10px] text-[#DB9A2C] font-bold">Action Required</p>
               </div>
 
-              <div className="bg-white border border-[#1F8A5F]/20 rounded-[22px] p-5 space-y-2 shadow-premium">
+              <div className="bg-white border border-[#1F8A5F]/20 rounded-[22px] p-3.5 sm:p-5 space-y-2 shadow-premium">
                 <span className="text-[11px] text-[#5C6773] font-bold uppercase tracking-wider block">Payout MAKER Queue</span>
                 <span className="text-3xl font-extrabold font-mono text-[#1F8A5F]">1</span>
                 <p className="text-[10px] text-[#1F8A5F] font-bold">Eligible for Disbursal</p>
@@ -317,7 +316,16 @@ export const EmployeeDashboard: React.FC = () => {
                               </div>
                             </div>
                             <div className="flex items-center justify-between text-[10px] pt-2 border-t border-slate-100">
-                              <span className="text-[#1F8A5F] font-bold">Streak: 8m</span>
+                              {(() => {
+                                const mStreak = m.kycStatus === 'pending'
+                                  ? 0
+                                  : store.getContributions().filter((c) => c.userId === m.id && c.status === 'paid').length;
+                                return (
+                                  <span className={mStreak > 0 ? "text-[#1F8A5F] font-bold" : "text-[#5C6773] font-bold"}>
+                                    Streak: {mStreak}m
+                                  </span>
+                                );
+                              })()}
                               <span className="text-[#1B4B66] font-bold group-hover:underline">Inspect 360° →</span>
                             </div>
                           </div>
@@ -331,11 +339,13 @@ export const EmployeeDashboard: React.FC = () => {
           </div>
         )}
 
-        {/* Module 2: Assigned Members Directory */}
+        {/* Module 2: All Members Directory */}
         {activeModule === 'members' && (
-          <div className="bg-white border border-[#1B4B66]/15 rounded-[28px] p-6 sm:p-10 space-y-6 shadow-premium animate-fade-up">
-            <h3 className="font-['Sora'] font-extrabold text-xl text-[#1E2732]">Assigned Members Directory</h3>
-            <div className="overflow-x-auto">
+          <div className="bg-white border border-[#1B4B66]/15 rounded-[28px] p-4 sm:p-8 space-y-6 shadow-premium animate-fade-up">
+            <h3 className="font-['Sora'] font-extrabold text-lg sm:text-xl text-[#1E2732]">All Members Directory</h3>
+            
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="border-b border-slate-200 text-[#5C6773] uppercase tracking-wider font-bold">
@@ -358,7 +368,7 @@ export const EmployeeDashboard: React.FC = () => {
                         {p.pipelineStage === 'KYC_PENDING' ? 'APPROVAL_PENDING' : (p.pipelineStage || 'PAYMENT_ACTIVE')}
                       </td>
                       <td className="py-4 text-right">
-                        <button onClick={() => setSelectedMember(p)} className="bg-[#1B4B66] text-white font-bold px-3 py-1.5 rounded-[8px]">
+                        <button onClick={() => setSelectedMember(p)} className="bg-[#1B4B66] hover:bg-[#123448] text-white font-bold text-xs px-3.5 py-2.5 rounded-[10px] min-h-[44px] cursor-pointer transition-all">
                           Inspect 360° Profile
                         </button>
                       </td>
@@ -367,15 +377,43 @@ export const EmployeeDashboard: React.FC = () => {
                 </tbody>
               </table>
             </div>
+
+            {/* Mobile Stacked Card List View */}
+            <div className="block md:hidden space-y-3">
+              {displayedProfiles.map((p) => (
+                <div key={p.id} className="p-4 bg-[#F8FAFC] border border-slate-200 rounded-[18px] space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-bold text-sm text-[#1E2732]">{p.fullName}</p>
+                      <p className="text-xs font-mono text-[#5C6773]">{p.phone}</p>
+                    </div>
+                    <span className={`text-[10px] font-extrabold px-2.5 py-1 rounded-full ${p.kycStatus === 'pending' ? 'bg-amber-100 text-amber-800' : 'bg-[#1F8A5F]/10 text-[#1F8A5F]'}`}>
+                      {p.kycStatus === 'pending' ? 'PENDING' : 'APPROVED'}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-200">
+                    <span className="text-[11px] font-bold text-[#1B4B66]">
+                      {p.pipelineStage === 'KYC_PENDING' ? 'APPROVAL_PENDING' : (p.pipelineStage || 'PAYMENT_ACTIVE')}
+                    </span>
+                    <button
+                      onClick={() => setSelectedMember(p)}
+                      className="bg-[#1B4B66] hover:bg-[#123448] text-white font-bold text-xs px-3.5 py-2.5 rounded-[10px] min-h-[44px] flex items-center justify-center cursor-pointer"
+                    >
+                      Inspect 360° →
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
         {/* Module 3: Member Approval Queue */}
         {activeModule === 'kyc' && (
-          <div className="bg-white border border-[#1B4B66]/15 rounded-[28px] p-6 sm:p-10 space-y-6 shadow-premium animate-fade-up">
+          <div className="bg-white border border-[#1B4B66]/15 rounded-[28px] p-4 sm:p-8 space-y-6 shadow-premium animate-fade-up">
             <div className="flex items-center justify-between flex-wrap gap-2">
               <div>
-                <h3 className="font-['Sora'] font-extrabold text-xl text-[#1E2732]">Pending Member Approval Queue</h3>
+                <h3 className="font-['Sora'] font-extrabold text-lg sm:text-xl text-[#1E2732]">Pending Member Approval Queue</h3>
                 <p className="text-xs text-[#5C6773]">Review and approve new member account registrations</p>
               </div>
               <span className="px-3 py-1 bg-amber-100 text-amber-800 font-bold text-xs rounded-full">
@@ -384,7 +422,7 @@ export const EmployeeDashboard: React.FC = () => {
             </div>
 
             {profiles.filter((p) => p.kycStatus === 'pending').length === 0 ? (
-              <div className="p-8 bg-[#F8FAFC] rounded-[20px] border border-slate-200 text-center space-y-2">
+              <div className="p-6 sm:p-8 bg-[#F8FAFC] rounded-[20px] border border-slate-200 text-center space-y-2">
                 <CheckCircle2 className="w-8 h-8 text-[#1F8A5F] mx-auto" />
                 <p className="font-bold text-sm text-[#1E2732]">No Pending Applications</p>
                 <p className="text-xs text-[#5C6773]">All member accounts have been reviewed and approved!</p>
@@ -393,10 +431,10 @@ export const EmployeeDashboard: React.FC = () => {
               profiles
                 .filter((p) => p.kycStatus === 'pending')
                 .map((p) => (
-                  <div key={p.id} className="p-6 bg-[#F8FAFC] rounded-[20px] border border-slate-200 space-y-4">
-                    <div className="flex justify-between items-center flex-wrap gap-3">
+                  <div key={p.id} className="p-4 sm:p-6 bg-[#F8FAFC] rounded-[20px] border border-slate-200 space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                       <div>
-                        <p className="font-bold text-base text-[#1E2732]">{p.fullName} ({p.id})</p>
+                        <p className="font-bold text-sm sm:text-base text-[#1E2732]">{p.fullName} ({p.id})</p>
                         <p className="text-xs text-[#5C6773] font-mono">
                           Phone: {p.phone} • Email: {p.email}
                         </p>
@@ -408,7 +446,7 @@ export const EmployeeDashboard: React.FC = () => {
                             store.approveMemberKyc(p.id, 'Priya Verma (Senior Admin Officer)');
                             triggerToast(`Account Approved for ${p.fullName}!`);
                           }}
-                          className="bg-[#1F8A5F] hover:bg-emerald-600 text-white font-bold text-xs px-5 py-2.5 rounded-[12px] shadow-sm transition-all cursor-pointer flex items-center gap-1.5"
+                          className="bg-[#1F8A5F] hover:bg-emerald-600 text-white font-bold text-xs px-4 py-2.5 rounded-[12px] shadow-sm transition-all cursor-pointer flex items-center gap-1.5 self-start sm:self-auto"
                         >
                           <CheckCircle2 className="w-4 h-4" />
                           <span>Approve Member Account</span>
@@ -423,9 +461,9 @@ export const EmployeeDashboard: React.FC = () => {
 
         {/* Module 4: Manual Offline Payment Recording */}
         {activeModule === 'payments' && (
-          <div className="bg-white border border-[#1B4B66]/15 rounded-[28px] p-6 sm:p-10 space-y-8 shadow-premium animate-fade-up">
+          <div className="bg-white border border-[#1B4B66]/15 rounded-[28px] p-4 sm:p-8 space-y-8 shadow-premium animate-fade-up">
             <div>
-              <h3 className="font-['Sora'] font-extrabold text-xl text-[#1E2732]">Record Offline Customer Payment</h3>
+              <h3 className="font-['Sora'] font-extrabold text-lg sm:text-xl text-[#1E2732]">Record Offline Customer Payment</h3>
               <p className="text-xs text-[#5C6773]">
                 As Admin, manually record offline payments (Cash / Direct Bank Deposit) received from members. Unentered due payments show automatically as Pending to the member.
               </p>
@@ -465,7 +503,7 @@ export const EmployeeDashboard: React.FC = () => {
                   triggerToast('Error recording offline payment.');
                 }
               }}
-              className="p-6 bg-[#F8FAFC] border border-[#1B4B66]/20 rounded-[24px] space-y-4"
+              className="p-4 sm:p-6 bg-[#F8FAFC] border border-[#1B4B66]/20 rounded-[24px] space-y-4"
             >
               <h4 className="font-['Sora'] font-bold text-sm text-[#1B4B66] flex items-center gap-2">
                 <CreditCard className="w-4 h-4 text-[#D4A62A]" />
@@ -495,7 +533,7 @@ export const EmployeeDashboard: React.FC = () => {
                       if (matched) setManualMemberId(matched.id);
                     }}
                     placeholder="Enter customer name or phone..."
-                    className="w-full p-3 rounded-xl bg-white border border-slate-300 text-xs font-bold text-[#1E2732] focus:ring-2 focus:ring-[#1B4B66] focus:border-[#1B4B66]"
+                    className="w-full p-3 rounded-xl bg-white border border-slate-300 text-base sm:text-xs font-bold text-[#1E2732] focus:ring-2 focus:ring-[#1B4B66] focus:border-[#1B4B66] min-h-[44px]"
                     required
                   />
                   {/* Quick Select Suggestion Pills */}
@@ -517,7 +555,7 @@ export const EmployeeDashboard: React.FC = () => {
                               setManualCustomerInput(m.fullName);
                               setManualMemberId(m.id);
                             }}
-                            className={`text-[10px] px-2 py-0.5 rounded-md border font-bold cursor-pointer transition-all ${
+                            className={`text-[10px] px-2.5 py-1 rounded-md border font-bold cursor-pointer transition-all min-h-[32px] ${
                               manualMemberId === m.id
                                 ? 'bg-[#1B4B66] text-white border-[#1B4B66]'
                                 : 'bg-white text-[#1B4B66] border-slate-300 hover:bg-slate-100'
@@ -535,7 +573,7 @@ export const EmployeeDashboard: React.FC = () => {
                   <select
                     value={manualCycle}
                     onChange={(e) => setManualCycle(Number(e.target.value))}
-                    className="w-full p-3 rounded-xl bg-white border border-slate-300 text-xs font-bold text-[#1E2732] focus:ring-2 focus:ring-[#1B4B66]"
+                    className="w-full p-3 rounded-xl bg-white border border-slate-300 text-base sm:text-xs font-bold text-[#1E2732] focus:ring-2 focus:ring-[#1B4B66] min-h-[44px]"
                     required
                   >
                     <option value="" disabled>-- Select Payment Month / Cycle --</option>
@@ -553,7 +591,7 @@ export const EmployeeDashboard: React.FC = () => {
                     type="number"
                     value={manualAmount}
                     onChange={(e) => setManualAmount(Number(e.target.value))}
-                    className="w-full p-3 rounded-xl bg-white border border-slate-300 text-xs font-bold text-[#1E2732] focus:ring-2 focus:ring-[#1B4B66]"
+                    className="w-full p-3 rounded-xl bg-white border border-slate-300 text-base sm:text-xs font-bold text-[#1E2732] focus:ring-2 focus:ring-[#1B4B66] min-h-[44px]"
                     min={100}
                     step={100}
                     required
@@ -565,7 +603,7 @@ export const EmployeeDashboard: React.FC = () => {
                   <select
                     value={manualMode}
                     onChange={(e) => setManualMode(e.target.value as any)}
-                    className="w-full p-3 rounded-xl bg-white border border-slate-300 text-xs font-bold text-[#1E2732] focus:ring-2 focus:ring-[#1B4B66]"
+                    className="w-full p-3 rounded-xl bg-white border border-slate-300 text-base sm:text-xs font-bold text-[#1E2732] focus:ring-2 focus:ring-[#1B4B66] min-h-[44px]"
                     required
                   >
                     <option value="" disabled>-- Select Payment Mode --</option>
@@ -582,7 +620,7 @@ export const EmployeeDashboard: React.FC = () => {
                     type="date"
                     value={manualDate}
                     onChange={(e) => setManualDate(e.target.value)}
-                    className="w-full p-3 rounded-xl bg-white border border-slate-300 text-xs font-bold text-[#1E2732] focus:ring-2 focus:ring-[#1B4B66]"
+                    className="w-full p-3 rounded-xl bg-white border border-slate-300 text-base sm:text-xs font-bold text-[#1E2732] focus:ring-2 focus:ring-[#1B4B66] min-h-[44px]"
                     required
                   />
                 </div>
@@ -594,14 +632,14 @@ export const EmployeeDashboard: React.FC = () => {
                     placeholder="e.g., Received cash at branch office"
                     value={manualNotes}
                     onChange={(e) => setManualNotes(e.target.value)}
-                    className="w-full p-3 rounded-xl bg-white border border-slate-300 text-xs font-bold text-[#1E2732] focus:ring-2 focus:ring-[#1B4B66]"
+                    className="w-full p-3 rounded-xl bg-white border border-slate-300 text-base sm:text-xs font-bold text-[#1E2732] focus:ring-2 focus:ring-[#1B4B66] min-h-[44px]"
                   />
                 </div>
               </div>
 
               <button
                 type="submit"
-                className="w-full py-3.5 bg-[#1B4B66] hover:bg-[#123448] text-white font-['Sora'] font-extrabold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-3.5 min-h-[44px] bg-[#1B4B66] hover:bg-[#123448] text-white font-['Sora'] font-extrabold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <CheckCircle2 className="w-4 h-4 text-[#D4A62A]" />
                 <span>Verify & Record Offline Payment in Ledger</span>
@@ -647,22 +685,22 @@ export const EmployeeDashboard: React.FC = () => {
 
         {/* Module 5: Grace Period Management (Cured vs Expired) */}
         {activeModule === 'grace' && (
-          <div className="bg-white border border-[#DB9A2C]/30 rounded-[28px] p-6 sm:p-10 space-y-6 shadow-premium animate-fade-up">
-            <h3 className="font-['Sora'] font-extrabold text-xl text-[#1E2732]">Grace Period Management (5-Day Warning)</h3>
-            <div className="p-6 bg-[#FDF6E2] border border-[#DB9A2C] rounded-[20px] space-y-4">
-              <div className="flex justify-between items-center">
+          <div className="bg-white border border-[#DB9A2C]/30 rounded-[28px] p-4 sm:p-8 space-y-6 shadow-premium animate-fade-up">
+            <h3 className="font-['Sora'] font-extrabold text-lg sm:text-xl text-[#1E2732]">Grace Period Management (5-Day Warning)</h3>
+            <div className="p-4 sm:p-6 bg-[#FDF6E2] border border-[#DB9A2C] rounded-[20px] space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <p className="font-bold text-base text-[#1E2732]">Rahul Verma (usr_102)</p>
+                  <p className="font-bold text-sm sm:text-base text-[#1E2732]">Rahul Verma (usr_102)</p>
                   <p className="text-xs text-[#5C6773]">1 Day Remaining in 5-Day Grace Period</p>
                 </div>
-                <div className="flex gap-2">
-                  <button onClick={() => triggerToast('WhatsApp Grace Warning Sent!')} className="bg-[#DB9A2C] text-white font-bold text-xs px-4 py-2 rounded-[10px]">
+                <div className="flex flex-wrap items-center gap-2">
+                  <button onClick={() => triggerToast('WhatsApp Grace Warning Sent!')} className="bg-[#DB9A2C] hover:bg-amber-600 text-white font-bold text-xs px-3.5 py-2.5 rounded-[12px] shadow-sm transition-all cursor-pointer">
                     Send Reminder
                   </button>
-                  <button onClick={() => { store.markGraceRecovered('gpc_1'); triggerToast('Marked Grace Recovered!'); }} className="bg-[#1F8A5F] text-white font-bold text-xs px-4 py-2 rounded-[10px]">
+                  <button onClick={() => { store.markGraceRecovered('gpc_1'); triggerToast('Marked Grace Recovered!'); }} className="bg-[#1F8A5F] hover:bg-emerald-600 text-white font-bold text-xs px-3.5 py-2.5 rounded-[12px] shadow-sm transition-all cursor-pointer">
                     Mark Recovered
                   </button>
-                  <button onClick={() => { store.expireGracePeriod('gpc_1'); triggerToast('Grace Expired: Member marked DEFAULTED.'); }} className="bg-rose-600 text-white font-bold text-xs px-4 py-2 rounded-[10px]">
+                  <button onClick={() => { store.expireGracePeriod('gpc_1'); triggerToast('Grace Expired: Member marked DEFAULTED.'); }} className="bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs px-3.5 py-2.5 rounded-[12px] shadow-sm transition-all cursor-pointer">
                     Expire Grace (Day 6+)
                   </button>
                 </div>
@@ -673,22 +711,22 @@ export const EmployeeDashboard: React.FC = () => {
 
         {/* Module 7: Payout MAKER Step Verification */}
         {activeModule === 'payouts' && (
-          <div className="bg-white border border-[#1B4B66]/15 rounded-[28px] p-6 sm:p-10 space-y-6 shadow-premium animate-fade-up">
+          <div className="bg-white border border-[#1B4B66]/15 rounded-[28px] p-4 sm:p-8 space-y-6 shadow-premium animate-fade-up">
             <div>
-              <h3 className="font-['Sora'] font-extrabold text-xl text-[#1E2732]">Payout Disbursal MAKER Step Verification</h3>
+              <h3 className="font-['Sora'] font-extrabold text-lg sm:text-xl text-[#1E2732]">Payout Disbursal MAKER Step Verification</h3>
               <p className="text-xs text-[#5C6773]">Employee Operations Officer verifies 12 completed contributions & account approval before sending to Finance Admin for CHECKER approval.</p>
             </div>
 
             <div className="space-y-3">
               {store.getPayoutRecords().map((p) => (
-                <div key={p.id} className="p-5 rounded-[20px] bg-[#F8FAFC] border border-slate-200 flex justify-between items-center">
+                <div key={p.id} className="p-4 sm:p-5 rounded-[20px] bg-[#F8FAFC] border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
                     <span className="font-mono text-xs font-bold text-[#1B4B66]">#{p.id}</span>
                     <p className="font-bold text-base text-[#1E2732]">{p.userName}</p>
                     <p className="text-xs text-[#1F8A5F] font-mono font-bold">₹{(p.amountInPaise / 100).toLocaleString('en-IN')}.00</p>
                   </div>
                   {p.status === 'PENDING' ? (
-                    <button onClick={() => handleMakerVerify(p.id)} className="bg-[#1B4B66] text-white font-bold text-xs px-4 py-2.5 rounded-[12px]">
+                    <button onClick={() => handleMakerVerify(p.id)} className="bg-[#1B4B66] hover:bg-[#123448] text-white font-bold text-xs px-4 py-2.5 rounded-[12px] cursor-pointer transition-all self-start sm:self-auto">
                       Verify MAKER Step
                     </button>
                   ) : (
@@ -702,10 +740,10 @@ export const EmployeeDashboard: React.FC = () => {
 
         {/* Module 6: Gift Hamper Admin Allocation */}
         {activeModule === 'hampers' && (
-          <div className="bg-white border border-[#1B4B66]/15 rounded-[28px] p-6 sm:p-10 space-y-6 shadow-premium animate-fade-up">
+          <div className="bg-white border border-[#1B4B66]/15 rounded-[28px] p-4 sm:p-8 space-y-6 shadow-premium animate-fade-up">
             <div className="flex items-center justify-between flex-wrap gap-2">
               <div>
-                <h3 className="font-['Sora'] font-extrabold text-xl text-[#1E2732]">Maturity Gift Hamper Allocations</h3>
+                <h3 className="font-['Sora'] font-extrabold text-lg sm:text-xl text-[#1E2732]">Maturity Gift Hamper Allocations</h3>
                 <p className="text-xs text-[#5C6773]">Select and assign gift hampers to members for Month 12 maturity dispatch</p>
               </div>
               <span className="px-3 py-1 bg-[#1B4B66]/10 text-[#1B4B66] font-bold text-xs rounded-full">
@@ -784,7 +822,7 @@ export const EmployeeDashboard: React.FC = () => {
       {/* 360° Member Profile Inspection Drawer */}
       {selectedMember && (
         <div className="fixed inset-0 z-50 bg-[#1E2732]/70 backdrop-blur-md flex justify-end animate-fade-up">
-          <div className="w-full max-w-xl bg-white h-full shadow-2xl overflow-y-auto p-6 sm:p-8 space-y-6 text-[#1E2732] relative">
+          <div className="w-full max-w-xl bg-white h-full max-h-[100dvh] shadow-2xl overflow-y-auto p-4 sm:p-8 space-y-6 text-[#1E2732] relative">
             <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <div className="flex items-center space-x-3">
                 <img src={selectedMember.avatar} alt={selectedMember.fullName} className="w-12 h-12 rounded-full object-cover border-2 border-[#1B4B66]" />
@@ -793,7 +831,11 @@ export const EmployeeDashboard: React.FC = () => {
                   <p className="text-xs text-[#5C6773] font-mono">{selectedMember.phone}</p>
                 </div>
               </div>
-              <button onClick={() => setSelectedMember(null)} className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 font-bold">
+              <button
+                onClick={() => setSelectedMember(null)}
+                className="w-11 h-11 min-h-[44px] min-w-[44px] rounded-full bg-slate-100 hover:bg-slate-200 font-bold flex items-center justify-center cursor-pointer transition-all"
+                title="Close Drawer"
+              >
                 ✕
               </button>
             </div>
@@ -801,10 +843,18 @@ export const EmployeeDashboard: React.FC = () => {
             <div className="space-y-4 text-xs">
               <div className="p-4 rounded-[18px] bg-[#F7F5EF] border border-slate-200 space-y-2">
                 <span className="font-bold text-[#1B4B66] uppercase block">Member 360° Snapshot</span>
-                <p>Plan: <span className="font-bold text-[#1E2732]">₹1,000/mo Gold Harvest</span></p>
-                <p>Streak: <span className="font-bold text-[#D4A62A]">8 Months Active</span></p>
-                <p>Escrow Balance: <span className="font-mono font-bold text-[#1F8A5F]">₹8,000.00</span></p>
-                <p>Selected Hamper: <span className="font-bold text-[#1E2732]">Smart Home & Tech Hamper</span></p>
+                {(() => {
+                  const isPend = selectedMember.kycStatus === 'pending';
+                  const mContribs = store.getContributions().filter((c) => c.userId === selectedMember.id && c.status === 'paid');
+                  const paidMonths = isPend ? 0 : mContribs.length;
+                  const totalBalance = paidMonths * 1000;
+                  return (
+                    <>
+                      <p>Streak: <span className="font-bold text-[#D4A62A]">{paidMonths} Months Active</span></p>
+                      <p>Escrow Balance: <span className="font-mono font-bold text-[#1F8A5F]">₹{totalBalance.toLocaleString('en-IN')}.00</span></p>
+                    </>
+                  );
+                })()}
               </div>
 
               <button

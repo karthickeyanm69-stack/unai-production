@@ -178,7 +178,6 @@ export const AdminPanelPage: React.FC = () => {
                     <th className="pb-3">Member Name</th>
                     <th className="pb-3">Phone</th>
                     <th className="pb-3">Approval Status</th>
-                    <th className="pb-3">Assigned Lead</th>
                     <th className="pb-3">Pipeline Stage</th>
                   </tr>
                 </thead>
@@ -188,7 +187,6 @@ export const AdminPanelPage: React.FC = () => {
                       <td className="py-4 font-bold text-[#1E2732]">{m.fullName}</td>
                       <td className="py-4 font-mono text-[#5C6773]">{m.phone}</td>
                       <td className="py-4 font-bold text-[#1F8A5F]">{m.kycStatus === 'pending' ? 'PENDING APPROVAL' : 'APPROVED'}</td>
-                      <td className="py-4 text-[#5C6773]">{m.assignedEmployeeName || 'Priya Verma'}</td>
                       <td className="py-4 font-extrabold text-[#1B4B66]">
                         {m.pipelineStage === 'KYC_PENDING' ? 'APPROVAL_PENDING' : (m.pipelineStage || 'ACTIVE SAVER')}
                       </td>
