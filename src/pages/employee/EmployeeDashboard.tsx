@@ -48,6 +48,15 @@ export const EmployeeDashboard: React.FC = () => {
   const [kycRejectReason, setKycRejectReason] = useState('');
   const [toast, setToast] = useState<string | null>(null);
 
+  // Manual Offline Payment Entry State
+  const [manualCustomerInput, setManualCustomerInput] = useState<string>('Rahul Verma');
+  const [manualMemberId, setManualMemberId] = useState<string>('usr_102');
+  const [manualCycle, setManualCycle] = useState<number>(1);
+  const [manualAmount, setManualAmount] = useState<number>(1000);
+  const [manualMode, setManualMode] = useState<'OFFLINE_CASH' | 'OFFLINE_BANK_TRANSFER'>('OFFLINE_CASH');
+  const [manualNotes, setManualNotes] = useState<string>('');
+  const [manualDate, setManualDate] = useState<string>(new Date().toISOString().split('T')[0]);
+
   const currentEmployee = store.getCurrentUser();
 
   const triggerToast = (msg: string) => {
@@ -77,18 +86,18 @@ export const EmployeeDashboard: React.FC = () => {
   const navItems = [
     { id: 'overview', label: 'Overview', icon: TrendingUp },
     { id: 'members', label: 'Assigned Members', icon: Users },
-    { id: 'kyc', label: 'KYC Review', icon: ShieldCheck, badge: 1 },
-    { id: 'payments', label: 'Payment Monitoring', icon: CreditCard },
+    { id: 'kyc', label: 'Member Approvals', icon: ShieldCheck, badge: 1 },
+    { id: 'payments', label: 'Record Offline Payments', icon: CreditCard },
     { id: 'grace', label: 'Grace Management', icon: AlertTriangle, badge: 1 },
     { id: 'hampers', label: 'Hamper Tracking', icon: Gift, badge: 1 },
-    { id: 'payouts', label: 'Payout MAKER Verification', icon: DollarSign },
+    { id: 'payouts', label: 'Payout Verification & Disbursal', icon: DollarSign },
     { id: 'timeline', label: 'Activity Timeline', icon: Clock },
   ];
 
   const pipelineColumns: { id: PipelineStage; title: string; color: string }[] = [
-    { id: 'SIGNUP', title: '1. Member Signup', color: 'border-slate-300 bg-slate-100 text-slate-700' },
-    { id: 'KYC_PENDING', title: '2. KYC Pending', color: 'border-[#D4A62A] bg-[#D4A62A]/10 text-[#D4A62A]' },
-    { id: 'KYC_APPROVED', title: '3. KYC Approved', color: 'border-[#1F8A5F] bg-[#1F8A5F]/10 text-[#1F8A5F]' },
+    { id: 'SIGNUP', title: '1. Member Signup', color: 'border-slate-300 bg-slate-100 text-slate-[#5C6773]' },
+    { id: 'KYC_PENDING', title: '2. Approval Pending', color: 'border-[#D4A62A] bg-[#D4A62A]/10 text-[#D4A62A]' },
+    { id: 'KYC_APPROVED', title: '3. Account Approved', color: 'border-[#1F8A5F] bg-[#1F8A5F]/10 text-[#1F8A5F]' },
     { id: 'PAYMENT_ACTIVE', title: '4. Savings Active', color: 'border-[#1B4B66] bg-[#1B4B66]/10 text-[#1B4B66]' },
     { id: 'GRACE_PERIOD', title: '5. Grace Period', color: 'border-[#DB9A2C] bg-[#FDF6E2] text-[#DB9A2C]' },
     { id: 'HAMPER_SELECTED', title: '6. Hamper Selected', color: 'border-[#D4A62A] bg-amber-50 text-[#D4A62A]' },
@@ -99,7 +108,7 @@ export const EmployeeDashboard: React.FC = () => {
   const displayedProfiles = profiles.filter((p) => {
     const isMemberRole = p.role === 'member';
     const matchesSearch = p.fullName.toLowerCase().includes(search.toLowerCase()) || p.phone.includes(search);
-    const matchesAssigned = !filterAssignedOnly || p.assignedEmployeeId === currentEmployee.id || currentEmployee.role === 'super_admin';
+    const matchesAssigned = !filterAssignedOnly || p.assignedEmployeeId === currentEmployee.id || currentEmployee.role === 'employee';
     return isMemberRole && matchesSearch && matchesAssigned;
   });
 
@@ -253,7 +262,7 @@ export const EmployeeDashboard: React.FC = () => {
               </div>
 
               <div className="bg-white border border-[#D4A62A]/40 rounded-[22px] p-5 space-y-2 shadow-premium">
-                <span className="text-[11px] text-[#5C6773] font-bold uppercase tracking-wider block">Pending KYC Review</span>
+                <span className="text-[11px] text-[#5C6773] font-bold uppercase tracking-wider block">Pending Member Approvals</span>
                 <span className="text-3xl font-extrabold font-mono text-[#D4A62A]">1</span>
                 <p className="text-[10px] text-[#5C6773]">Waiting Review</p>
               </div>
@@ -275,7 +284,7 @@ export const EmployeeDashboard: React.FC = () => {
             <div className="bg-white border border-[#1B4B66]/15 rounded-[28px] p-6 sm:p-8 space-y-6 shadow-premium">
               <div className="border-b border-slate-100 pb-4">
                 <h3 className="font-['Sora'] font-extrabold text-xl text-[#1E2732]">Explicit 8-Stage Lifecycle Pipeline Board</h3>
-                <p className="text-xs text-[#5C6773]">Member Signup ➔ KYC Pending ➔ KYC Approved ➔ Savings Active ➔ Grace Period ➔ Hamper Selected ➔ Payout Processing ➔ Completed</p>
+                <p className="text-xs text-[#5C6773]">Member Signup ➔ Approval Pending ➔ Account Approved ➔ Savings Active ➔ Grace Period ➔ Hamper Selected ➔ Payout Processing ➔ Plan Matured</p>
               </div>
 
               <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-thin">
@@ -332,7 +341,7 @@ export const EmployeeDashboard: React.FC = () => {
                   <tr className="border-b border-slate-200 text-[#5C6773] uppercase tracking-wider font-bold">
                     <th className="pb-3">Member Name</th>
                     <th className="pb-3">Phone</th>
-                    <th className="pb-3">KYC Status</th>
+                    <th className="pb-3">Approval Status</th>
                     <th className="pb-3">Pipeline Stage</th>
                     <th className="pb-3 text-right">Actions</th>
                   </tr>
@@ -342,8 +351,12 @@ export const EmployeeDashboard: React.FC = () => {
                     <tr key={p.id} className="hover:bg-[#F8FAFC]">
                       <td className="py-4 font-bold text-[#1E2732]">{p.fullName}</td>
                       <td className="py-4 font-mono text-[#5C6773]">{p.phone}</td>
-                      <td className="py-4 font-bold text-[#1F8A5F]">{p.kycStatus.toUpperCase()}</td>
-                      <td className="py-4 font-bold text-[#1B4B66]">{p.pipelineStage || 'PAYMENT_ACTIVE'}</td>
+                      <td className="py-4 font-bold text-[#1F8A5F]">
+                        {p.kycStatus === 'pending' ? 'PENDING APPROVAL' : 'APPROVED'}
+                      </td>
+                      <td className="py-4 font-bold text-[#1B4B66]">
+                        {p.pipelineStage === 'KYC_PENDING' ? 'APPROVAL_PENDING' : (p.pipelineStage || 'PAYMENT_ACTIVE')}
+                      </td>
                       <td className="py-4 text-right">
                         <button onClick={() => setSelectedMember(p)} className="bg-[#1B4B66] text-white font-bold px-3 py-1.5 rounded-[8px]">
                           Inspect 360° Profile
@@ -357,13 +370,13 @@ export const EmployeeDashboard: React.FC = () => {
           </div>
         )}
 
-        {/* Module 3: KYC Review & Resubmission Request */}
+        {/* Module 3: Member Approval Queue */}
         {activeModule === 'kyc' && (
           <div className="bg-white border border-[#1B4B66]/15 rounded-[28px] p-6 sm:p-10 space-y-6 shadow-premium animate-fade-up">
             <div className="flex items-center justify-between flex-wrap gap-2">
               <div>
-                <h3 className="font-['Sora'] font-extrabold text-xl text-[#1E2732]">Pending KYC Review Queue</h3>
-                <p className="text-xs text-[#5C6773]">Review AI OCR verification and approve member accounts</p>
+                <h3 className="font-['Sora'] font-extrabold text-xl text-[#1E2732]">Pending Member Approval Queue</h3>
+                <p className="text-xs text-[#5C6773]">Review and approve new member account registrations</p>
               </div>
               <span className="px-3 py-1 bg-amber-100 text-amber-800 font-bold text-xs rounded-full">
                 {profiles.filter((p) => p.kycStatus === 'pending').length} Pending
@@ -374,7 +387,7 @@ export const EmployeeDashboard: React.FC = () => {
               <div className="p-8 bg-[#F8FAFC] rounded-[20px] border border-slate-200 text-center space-y-2">
                 <CheckCircle2 className="w-8 h-8 text-[#1F8A5F] mx-auto" />
                 <p className="font-bold text-sm text-[#1E2732]">No Pending Applications</p>
-                <p className="text-xs text-[#5C6773]">All customer KYC applications have been reviewed and approved!</p>
+                <p className="text-xs text-[#5C6773]">All member accounts have been reviewed and approved!</p>
               </div>
             ) : (
               profiles
@@ -385,26 +398,250 @@ export const EmployeeDashboard: React.FC = () => {
                       <div>
                         <p className="font-bold text-base text-[#1E2732]">{p.fullName} ({p.id})</p>
                         <p className="text-xs text-[#5C6773] font-mono">
-                          Phone: {p.phone} • Email: {p.email} • PAN: {p.maskedPan || 'XXXXX5678G'}
+                          Phone: {p.phone} • Email: {p.email}
                         </p>
-                        <span className="text-[10px] text-[#1F8A5F] font-bold mt-1 block">OCR 99.8% Match Verified • Pending Officer Sign-off</span>
+                        <span className="text-[10px] text-[#1F8A5F] font-bold mt-1 block">New Registration • Pending Admin Officer Sign-off</span>
                       </div>
                       <div className="flex gap-2">
                         <button
                           onClick={() => {
-                            store.approveMemberKyc(p.id, 'Priya Verma (Senior MRM Officer)');
-                            triggerToast(`KYC & Account Approved for ${p.fullName}!`);
+                            store.approveMemberKyc(p.id, 'Priya Verma (Senior Admin Officer)');
+                            triggerToast(`Account Approved for ${p.fullName}!`);
                           }}
                           className="bg-[#1F8A5F] hover:bg-emerald-600 text-white font-bold text-xs px-5 py-2.5 rounded-[12px] shadow-sm transition-all cursor-pointer flex items-center gap-1.5"
                         >
                           <CheckCircle2 className="w-4 h-4" />
-                          <span>Approve Account & KYC</span>
+                          <span>Approve Member Account</span>
                         </button>
                       </div>
                     </div>
                   </div>
                 ))
             )}
+          </div>
+        )}
+
+        {/* Module 4: Manual Offline Payment Recording */}
+        {activeModule === 'payments' && (
+          <div className="bg-white border border-[#1B4B66]/15 rounded-[28px] p-6 sm:p-10 space-y-8 shadow-premium animate-fade-up">
+            <div>
+              <h3 className="font-['Sora'] font-extrabold text-xl text-[#1E2732]">Record Offline Customer Payment</h3>
+              <p className="text-xs text-[#5C6773]">
+                As Admin, manually record offline payments (Cash / Direct Bank Deposit) received from members. Unentered due payments show automatically as Pending to the member.
+              </p>
+            </div>
+
+            {/* Manual Payment Entry Form */}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                // Match profile by manualMemberId or by manualCustomerInput text
+                let targetMemberId = manualMemberId;
+                const query = manualCustomerInput.trim().toLowerCase();
+                if (query) {
+                  const matched = profiles.find(
+                    (p) =>
+                      p.fullName.toLowerCase().includes(query) ||
+                      p.phone.replaceAll(' ', '').includes(query.replaceAll(' ', '')) ||
+                      p.id.toLowerCase() === query
+                  );
+                  if (matched) targetMemberId = matched.id;
+                }
+
+                const success = store.recordOfflinePayment(
+                  targetMemberId,
+                  manualCycle,
+                  manualAmount,
+                  manualDate,
+                  manualMode,
+                  manualNotes
+                );
+                if (success) {
+                  const targetUser = profiles.find((p) => p.id === targetMemberId);
+                  triggerToast(`Recorded ₹${manualAmount} offline payment for ${targetUser?.fullName || manualCustomerInput} (Cycle ${manualCycle})!`);
+                  setManualNotes('');
+                  setProfiles(store.getProfiles());
+                } else {
+                  triggerToast('Error recording offline payment.');
+                }
+              }}
+              className="p-6 bg-[#F8FAFC] border border-[#1B4B66]/20 rounded-[24px] space-y-4"
+            >
+              <h4 className="font-['Sora'] font-bold text-sm text-[#1B4B66] flex items-center gap-2">
+                <CreditCard className="w-4 h-4 text-[#D4A62A]" />
+                <span>Admin Offline Receipt Entry Form</span>
+              </h4>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-xs font-bold">
+                {/* 1st Box: Manual Entry (Customer Name or Mobile Number) */}
+                <div className="space-y-1 sm:col-span-2 md:col-span-1">
+                  <label className="text-[#1E2732] flex items-center justify-between">
+                    <span>1. Customer Name / Mobile (Manual Entry)</span>
+                    <span className="text-[10px] text-[#1F8A5F]">✍️ Type Name</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={manualCustomerInput}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setManualCustomerInput(val);
+                      const query = val.toLowerCase().trim();
+                      const matched = profiles.find(
+                        (p) =>
+                          p.fullName.toLowerCase().includes(query) ||
+                          p.phone.replaceAll(' ', '').includes(query.replaceAll(' ', '')) ||
+                          p.id.toLowerCase() === query
+                      );
+                      if (matched) setManualMemberId(matched.id);
+                    }}
+                    placeholder="Enter customer name or phone..."
+                    className="w-full p-3 rounded-xl bg-white border border-slate-300 text-xs font-bold text-[#1E2732] focus:ring-2 focus:ring-[#1B4B66] focus:border-[#1B4B66]"
+                    required
+                  />
+                  {/* Quick Select Suggestion Pills */}
+                  {manualCustomerInput && (
+                    <div className="flex flex-wrap gap-1 pt-1">
+                      {profiles
+                        .filter(
+                          (p) =>
+                            p.role === 'member' &&
+                            (p.fullName.toLowerCase().includes(manualCustomerInput.toLowerCase()) ||
+                              p.phone.includes(manualCustomerInput))
+                        )
+                        .slice(0, 3)
+                        .map((m) => (
+                          <button
+                            key={m.id}
+                            type="button"
+                            onClick={() => {
+                              setManualCustomerInput(m.fullName);
+                              setManualMemberId(m.id);
+                            }}
+                            className={`text-[10px] px-2 py-0.5 rounded-md border font-bold cursor-pointer transition-all ${
+                              manualMemberId === m.id
+                                ? 'bg-[#1B4B66] text-white border-[#1B4B66]'
+                                : 'bg-white text-[#1B4B66] border-slate-300 hover:bg-slate-100'
+                            }`}
+                          >
+                            ✓ {m.fullName} ({m.phone})
+                          </button>
+                        ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[#1E2732]">Payment Month / Cycle Number</label>
+                  <select
+                    value={manualCycle}
+                    onChange={(e) => setManualCycle(Number(e.target.value))}
+                    className="w-full p-3 rounded-xl bg-white border border-slate-300 text-xs font-bold text-[#1E2732] focus:ring-2 focus:ring-[#1B4B66]"
+                    required
+                  >
+                    <option value="" disabled>-- Select Payment Month / Cycle --</option>
+                    {Array.from({ length: 12 }, (_, i) => i + 1).map((c) => (
+                      <option key={c} value={c}>
+                        Month {c} Contribution
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[#1E2732]">Amount Paid (₹)</label>
+                  <input
+                    type="number"
+                    value={manualAmount}
+                    onChange={(e) => setManualAmount(Number(e.target.value))}
+                    className="w-full p-3 rounded-xl bg-white border border-slate-300 text-xs font-bold text-[#1E2732] focus:ring-2 focus:ring-[#1B4B66]"
+                    min={100}
+                    step={100}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[#1E2732]">Payment Mode</label>
+                  <select
+                    value={manualMode}
+                    onChange={(e) => setManualMode(e.target.value as any)}
+                    className="w-full p-3 rounded-xl bg-white border border-slate-300 text-xs font-bold text-[#1E2732] focus:ring-2 focus:ring-[#1B4B66]"
+                    required
+                  >
+                    <option value="" disabled>-- Select Payment Mode --</option>
+                    <option value="OFFLINE_CASH">Offline Cash</option>
+                    <option value="OFFLINE_BANK_TRANSFER">Direct Bank Deposit / Transfer</option>
+                    <option value="OFFLINE_CHEQUE">Offline Cheque / DD</option>
+                    <option value="DESK_COLLECTION">Admin Desk Collection</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[#1E2732]">Date Payment Received</label>
+                  <input
+                    type="date"
+                    value={manualDate}
+                    onChange={(e) => setManualDate(e.target.value)}
+                    className="w-full p-3 rounded-xl bg-white border border-slate-300 text-xs font-bold text-[#1E2732] focus:ring-2 focus:ring-[#1B4B66]"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[#1E2732]">Admin Notes / Remarks</label>
+                  <input
+                    type="text"
+                    placeholder="e.g., Received cash at branch office"
+                    value={manualNotes}
+                    onChange={(e) => setManualNotes(e.target.value)}
+                    className="w-full p-3 rounded-xl bg-white border border-slate-300 text-xs font-bold text-[#1E2732] focus:ring-2 focus:ring-[#1B4B66]"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3.5 bg-[#1B4B66] hover:bg-[#123448] text-white font-['Sora'] font-extrabold text-xs rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <CheckCircle2 className="w-4 h-4 text-[#D4A62A]" />
+                <span>Verify & Record Offline Payment in Ledger</span>
+              </button>
+            </form>
+
+            {/* Members Current Payment Status Summary */}
+            <div className="space-y-3">
+              <h4 className="font-['Sora'] font-bold text-sm text-[#1E2732]">All Member Payment Ledgers</h4>
+              <div className="divide-y divide-[#1B4B66]/10 border border-slate-200 rounded-[20px] bg-[#F8FAFC] overflow-hidden">
+                {profiles.filter((p) => p.role === 'member').map((m) => {
+                  const mContribs = store.getContributions().filter((c) => c.userId === m.id);
+                  const paidCycles = mContribs.filter((c) => c.status === 'paid').length;
+                  return (
+                    <div key={m.id} className="p-4 flex items-center justify-between flex-wrap gap-2 hover:bg-white transition-all">
+                      <div>
+                        <p className="font-bold text-xs text-[#1E2732]">{m.fullName} ({m.phone})</p>
+                        <p className="text-[11px] text-[#5C6773]">
+                          Recorded Payments: <span className="font-bold text-[#1F8A5F]">{paidCycles} of 12 Months</span>
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${paidCycles > 0 ? 'bg-[#1F8A5F]/10 text-[#1F8A5F]' : 'bg-amber-100 text-amber-800'}`}>
+                          {paidCycles > 0 ? `${paidCycles} Paid Cycles` : 'Pending Admin Entry'}
+                        </span>
+                        <button
+                          onClick={() => {
+                            setManualMemberId(m.id);
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                          }}
+                          className="text-[11px] font-extrabold text-[#1B4B66] hover:underline"
+                        >
+                          Record Payment →
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         )}
 
@@ -439,7 +676,7 @@ export const EmployeeDashboard: React.FC = () => {
           <div className="bg-white border border-[#1B4B66]/15 rounded-[28px] p-6 sm:p-10 space-y-6 shadow-premium animate-fade-up">
             <div>
               <h3 className="font-['Sora'] font-extrabold text-xl text-[#1E2732]">Payout Disbursal MAKER Step Verification</h3>
-              <p className="text-xs text-[#5C6773]">Employee Operations Officer verifies 12 completed contributions & KYC compliance before sending to Finance Admin for CHECKER approval.</p>
+              <p className="text-xs text-[#5C6773]">Employee Operations Officer verifies 12 completed contributions & account approval before sending to Finance Admin for CHECKER approval.</p>
             </div>
 
             <div className="space-y-3">
@@ -522,7 +759,7 @@ export const EmployeeDashboard: React.FC = () => {
         {activeModule === 'timeline' && (
           <div className="bg-white border border-[#1B4B66]/15 rounded-[28px] p-6 sm:p-10 space-y-6 shadow-premium animate-fade-up">
             <h3 className="font-['Sora'] font-extrabold text-xl text-[#1E2732]">Member Operational Activity Timeline</h3>
-            <p className="text-xs text-[#5C6773]">Member Signup ➔ KYC Submitted ➔ Payment Made ➔ Reminder Sent ➔ Grace Period ➔ Hamper Selected ➔ Payout Released</p>
+            <p className="text-xs text-[#5C6773]">Member Signup ➔ Account Approved ➔ Payment Made ➔ Reminder Sent ➔ Grace Period ➔ Hamper Selected ➔ Payout Released</p>
 
             <div className="space-y-6 relative before:absolute before:inset-0 before:left-5 before:w-0.5 before:bg-slate-200">
               {store.getActivityTimeline('usr_1').map((act) => (

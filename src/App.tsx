@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { store } from './store';
 import { TopHeader } from './components/TopHeader';
 import { BottomNavDock } from './components/BottomNavDock';
-import { RoleGuard } from './components/RoleGuard';
+import { RoleGuard, StaffSignInForm } from './components/RoleGuard';
 import { LoginModal } from './components/LoginModal';
 
 // Pages
@@ -24,17 +24,24 @@ import { EmployeeDashboard } from './pages/employee/EmployeeDashboard';
 import { SupportPortalPage } from './pages/support/SupportPortalPage';
 import { FinanceAdminPortalPage } from './pages/finance/FinanceAdminPortalPage';
 
+// Home redirect router based on active authentication and role
+const HomeRedirect: React.FC = () => {
+  const isAuthenticated = store.getIsAuthenticated();
+  if (!isAuthenticated) {
+    return <StaffSignInForm />;
+  }
+  const user = store.getCurrentUser();
+  if (user.role === 'employee') {
+    return <Navigate to="/employee" replace />;
+  }
+  return <Navigate to="/dashboard" replace />;
+};
+
 // Simple 404 Not Found page
 const NotFoundPage: React.FC = () => (
   <div className="min-h-screen bg-[#F7F5EF] flex flex-col items-center justify-center gap-4 text-[#1E2732] p-8">
     <div className="text-6xl font-['Sora'] font-black text-[#1B4B66]">404</div>
-    <h1 className="text-xl font-['Sora'] font-extrabold">Page Not Found</h1>
-    <p className="text-sm text-[#5C6773] font-medium text-center max-w-xs">
-      The URL you entered doesn't exist. You may have mistyped it.
-    </p>
-    <a href="/" className="mt-2 px-6 py-2.5 bg-[#1B4B66] text-white rounded-full text-sm font-bold hover:bg-[#123448] transition-all">
-      Go to Home
-    </a>
+    <div className="text-[#5C6773] text-sm font-bold">Page Not Found</div>
   </div>
 );
 
@@ -55,111 +62,55 @@ export const App: React.FC = () => {
         <main className="flex-1 w-full max-w-full overflow-x-hidden">
           <Routes>
             {/* ──────────────────────────────────────────
-                1. PUBLIC PAGES — No auth needed
+                1. PUBLIC WEBSITE & PORTAL LOGIN
             ────────────────────────────────────────── */}
             <Route path="/" element={<LandingPage />} />
-            <Route path="/how-it-works" element={<HowItWorksPage />} />
-            <Route path="/trust" element={<TrustCenterPage />} />
-            <Route path="/kyc" element={<KYCPage />} />
-            <Route path="/plans" element={<PlanSelectionPage />} />
+            <Route path="/login" element={<StaffSignInForm />} />
+            <Route path="/staff-login" element={<StaffSignInForm />} />
+            <Route path="/admin-login" element={<StaffSignInForm />} />
+            <Route path="/employee-login" element={<StaffSignInForm />} />
+            <Route path="/how-it-works" element={<Navigate to="/" replace />} />
+            <Route path="/trust" element={<Navigate to="/" replace />} />
+            <Route path="/kyc" element={<Navigate to="/" replace />} />
+            <Route path="/plans" element={<Navigate to="/" replace />} />
+            <Route path="/console" element={<Navigate to="/staff-login" replace />} />
+            <Route path="/staff" element={<Navigate to="/staff-login" replace />} />
+            <Route path="/portal" element={<Navigate to="/staff-login" replace />} />
 
             {/* ──────────────────────────────────────────
-                2. STAFF & ADMIN CONSOLE LOGIN
-                RoleGuard auto-redirects authenticated users
-                to their correct dashboard. If unauthenticated,
-                it renders the sign-in screen at /login.
-            ────────────────────────────────────────── */}
-            <Route
-              path="/login"
-              element={
-                <RoleGuard allowedRoles={['employee', 'support_agent', 'finance_admin', 'super_admin']}>
-                  {/* RoleGuard redirects authenticated staff to their dashboard.
-                      This fallback child is never rendered when authenticated. */}
-                  <Navigate to="/" replace />
-                </RoleGuard>
-              }
-            />
-            {/* Aliases for /login */}
-            <Route path="/console" element={<Navigate to="/login" replace />} />
-            <Route path="/staff" element={<Navigate to="/login" replace />} />
-            <Route path="/staff-login" element={<Navigate to="/login" replace />} />
-            <Route path="/portal" element={<Navigate to="/login" replace />} />
-
-            {/* ──────────────────────────────────────────
-                3. EMPLOYEE MRM DASHBOARD
-                Guards: employee, super_admin only
+                2. ADMIN & EMPLOYEE PORTAL
             ────────────────────────────────────────── */}
             <Route
               path="/employee"
               element={
-                <RoleGuard allowedRoles={['employee', 'super_admin']}>
+                <RoleGuard allowedRoles={['employee']}>
                   <EmployeeDashboard />
                 </RoleGuard>
               }
             />
+            <Route path="/admin" element={<Navigate to="/employee" replace />} />
+            <Route path="/admin/*" element={<Navigate to="/employee" replace />} />
             <Route path="/mrm" element={<Navigate to="/employee" replace />} />
             <Route path="/mrm/*" element={<Navigate to="/employee" replace />} />
+            <Route path="/support" element={<Navigate to="/employee" replace />} />
+            <Route path="/finance" element={<Navigate to="/employee" replace />} />
 
             {/* ──────────────────────────────────────────
-                4. SUPPORT DESK PORTAL
-                Guards: support_agent, super_admin only
+                3. CUSTOMER / USER PORTAL ROUTES
             ────────────────────────────────────────── */}
-            <Route
-              path="/support"
-              element={
-                <RoleGuard allowedRoles={['support_agent', 'super_admin']}>
-                  <SupportPortalPage />
-                </RoleGuard>
-              }
-            />
-
-            {/* ──────────────────────────────────────────
-                5. FINANCE ESCROW PORTAL
-                Guards: finance_admin, super_admin only
-            ────────────────────────────────────────── */}
-            <Route
-              path="/finance"
-              element={
-                <RoleGuard allowedRoles={['finance_admin', 'super_admin']}>
-                  <FinanceAdminPortalPage />
-                </RoleGuard>
-              }
-            />
-
-            {/* ──────────────────────────────────────────
-                6. SUPER ADMIN EXECUTIVE PANEL
-                Guards: super_admin only
-            ────────────────────────────────────────── */}
-            <Route
-              path="/admin"
-              element={
-                <RoleGuard allowedRoles={['super_admin']}>
-                  <AdminPanelPage />
-                </RoleGuard>
-              }
-            />
-
-            {/* 7. MEMBER PAYMENT & SAVINGS WALLET ROUTES */}
             <Route
               path="/dashboard"
               element={
-                <RoleGuard allowedRoles={['member', 'super_admin']}>
+                <RoleGuard allowedRoles={['member']}>
                   <DashboardPage />
                 </RoleGuard>
               }
             />
-            <Route
-              path="/payment-setup"
-              element={
-                <RoleGuard allowedRoles={['member', 'super_admin']}>
-                  <PaymentSetupPage />
-                </RoleGuard>
-              }
-            />
+            <Route path="/payment-setup" element={<Navigate to="/pay" replace />} />
             <Route
               path="/pay"
               element={
-                <RoleGuard allowedRoles={['member', 'super_admin']}>
+                <RoleGuard allowedRoles={['member']}>
                   <MakePaymentPage />
                 </RoleGuard>
               }
@@ -167,7 +118,7 @@ export const App: React.FC = () => {
             <Route
               path="/ledger"
               element={
-                <RoleGuard allowedRoles={['member', 'super_admin']}>
+                <RoleGuard allowedRoles={['member']}>
                   <LedgerPage />
                 </RoleGuard>
               }
@@ -175,7 +126,7 @@ export const App: React.FC = () => {
             <Route
               path="/hampers"
               element={
-                <RoleGuard allowedRoles={['member', 'super_admin']}>
+                <RoleGuard allowedRoles={['member']}>
                   <HamperSelectionPage />
                 </RoleGuard>
               }
@@ -183,7 +134,7 @@ export const App: React.FC = () => {
             <Route
               path="/circles"
               element={
-                <RoleGuard allowedRoles={['member', 'super_admin']}>
+                <RoleGuard allowedRoles={['member']}>
                   <SavingsCirclesPage />
                 </RoleGuard>
               }
@@ -191,7 +142,7 @@ export const App: React.FC = () => {
             <Route
               path="/profile"
               element={
-                <RoleGuard allowedRoles={['member', 'super_admin']}>
+                <RoleGuard allowedRoles={['member']}>
                   <MemberProfileSettingsPage />
                 </RoleGuard>
               }
@@ -199,7 +150,7 @@ export const App: React.FC = () => {
             <Route
               path="/settings"
               element={
-                <RoleGuard allowedRoles={['member', 'super_admin']}>
+                <RoleGuard allowedRoles={['member']}>
                   <MemberProfileSettingsPage />
                 </RoleGuard>
               }
@@ -207,7 +158,7 @@ export const App: React.FC = () => {
             <Route
               path="/notifications"
               element={
-                <RoleGuard allowedRoles={['member', 'super_admin']}>
+                <RoleGuard allowedRoles={['member', 'employee']}>
                   <MemberProfileSettingsPage />
                 </RoleGuard>
               }

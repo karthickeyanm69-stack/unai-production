@@ -107,6 +107,27 @@ export const SavingsCirclesPage: React.FC = () => {
           <CircleRecipientAvatars />
         </div>
 
+        {/* Contact Admin Officer Plan Discussion Banner */}
+        <div className="bg-[#1B4B66]/5 border border-[#1B4B66]/20 rounded-[24px] p-6 text-[#1E2732] flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+          <div className="space-y-1">
+            <span className="px-3 py-1 bg-[#1B4B66]/10 text-[#1B4B66] text-[10px] font-extrabold rounded-full uppercase tracking-wider">
+              Admin Plan Discussion & Advice
+            </span>
+            <h3 className="font-['Sora'] font-extrabold text-base text-[#1E2732]">
+              Discuss Savings Plans with Admin
+            </h3>
+            <p className="text-xs text-[#5C6773]">
+              Contact your Admin Officer to discuss monthly offline payment plans, payment schedules, or group goal milestones. Once processed offline by Admin, friends can view their updated payment plans.
+            </p>
+          </div>
+          <a
+            href="tel:+919876511100"
+            className="bg-[#1B4B66] hover:bg-[#123448] text-white font-['Sora'] font-extrabold text-xs px-5 py-3 rounded-[14px] shadow-md shrink-0 text-center transition-all"
+          >
+            Call Admin (+91 98765 11100)
+          </a>
+        </div>
+
         {/* Circle Selector Tabs */}
         {circles.length > 1 && (
           <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">

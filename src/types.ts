@@ -1,4 +1,4 @@
-export type UserRole = 'member' | 'employee' | 'support_agent' | 'finance_admin' | 'super_admin';
+export type UserRole = 'member' | 'employee';
 
 export type MembershipStatus =
   | 'AUTH_NO_KYC'
@@ -112,6 +112,10 @@ export interface Contribution {
   cycleNumber: number;
   status: ContributionStatus;
   paymentGatewayRef?: string;
+  paymentMode?: 'OFFLINE_CASH' | 'OFFLINE_BANK_TRANSFER' | 'ADMIN_MANUAL_ENTRY';
+  recordedByAdminId?: string;
+  recordedByAdminName?: string;
+  adminNotes?: string;
 }
 
 export interface HamperItem {

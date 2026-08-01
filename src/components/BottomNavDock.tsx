@@ -70,10 +70,7 @@ export const BottomNavDock: React.FC = () => {
     store.loginUser(email, '1234');
     setShowProfileMenu(false);
     if (role === 'member') navigate('/dashboard');
-    else if (role === 'employee') navigate('/employee');
-    else if (role === 'support_agent') navigate('/support');
-    else if (role === 'finance_admin') navigate('/finance');
-    else if (role === 'super_admin') navigate('/admin');
+    else navigate('/employee');
   };
 
   const handleAddAccount = () => {
@@ -192,80 +189,19 @@ export const BottomNavDock: React.FC = () => {
 
       {/* SINGLE NAVIGATION BAR (Bottom Floating Dock) */}
       <div className="fixed bottom-4 md:bottom-8 left-1/2 -translate-x-1/2 z-50 bg-white/95 border-2 border-[#1B4B66]/30 rounded-full p-2 sm:p-2.5 flex items-center gap-2 sm:gap-3 shadow-2xl backdrop-blur-xl pb-[calc(0.5rem+env(safe-area-inset-bottom))] transition-all duration-300 ease-out">
-        {/* CASE A: Visitor / Public Page Navigation */}
-        {(isPublicNewCustomerRoute || !isAuthenticated) && (
-          <>
-            <Link
-              to="/"
-              aria-label="New Customer Home"
-              className={`p-3 sm:p-3.5 rounded-full transition-all flex items-center gap-1.5 ${
-                location.pathname === '/'
-                  ? 'bg-[#1B4B66] text-white shadow-lg font-extrabold'
-                  : 'text-[#1B4B66] hover:bg-[#1B4B66]/10 font-bold'
-              }`}
-              title="New Customer Home"
-            >
-              <Home className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5]" />
-            </Link>
-
-            <Link
-              to="/how-it-works"
-              aria-label="How It Works Page"
-              className={`p-3 sm:p-3.5 rounded-full transition-all flex items-center gap-1.5 ${
-                location.pathname === '/how-it-works'
-                  ? 'bg-[#1B4B66] text-white shadow-lg font-extrabold'
-                  : 'text-[#1B4B66] hover:bg-[#1B4B66]/10 font-bold'
-              }`}
-              title="How It Works"
-            >
-              <Info className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5]" />
-            </Link>
-
-            <Link
-              to="/trust"
-              aria-label="Trust & Legal Center"
-              className={`p-3 sm:p-3.5 rounded-full transition-all flex items-center gap-1.5 ${
-                location.pathname === '/trust'
-                  ? 'bg-[#1B4B66] text-white shadow-lg font-extrabold'
-                  : 'text-[#1B4B66] hover:bg-[#1B4B66]/10 font-bold'
-              }`}
-              title="Trust & Legal"
-            >
-              <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5]" />
-            </Link>
-
-            <button
-              onClick={() => store.openLoginModal()}
-              aria-label="Login to Wallet"
-              className="p-3 sm:p-3.5 rounded-full bg-white border border-[#1B4B66]/30 text-[#1B4B66] hover:bg-[#1B4B66]/10 font-bold transition-all shadow-sm flex items-center gap-1.5 text-xs font-['Sora'] cursor-pointer"
-              title="Login to Wallet"
-            >
-              <Lock className="w-4 h-4 sm:w-5 sm:h-5 text-[#1B4B66] stroke-[2.5]" />
-              <span className="hidden sm:inline font-extrabold">Login</span>
-            </button>
-
-            {/* Smooth Animated "Start Saving" Button attached ONLY AFTER hero CTA leaves viewport */}
-            <div
-              className={`transition-all duration-300 ease-out transform origin-right flex items-center ${
-                showStartSavingBtn
-                  ? 'max-w-[170px] opacity-100 scale-100 translate-x-0 ml-1'
-                  : 'max-w-0 opacity-0 scale-95 translate-x-3 pointer-events-none ml-0 overflow-hidden'
-              }`}
-            >
-              <Link
-                to="/kyc"
-                aria-label="Start Savings Onboarding"
-                className="whitespace-nowrap px-4 py-2.5 sm:px-5 sm:py-3 rounded-full bg-[#1B4B66] hover:bg-[#123448] text-white font-['Sora'] font-extrabold text-xs shadow-md transition-all flex items-center gap-1.5 hover:scale-105 cursor-pointer"
-              >
-                <span>Start Saving</span>
-                <ArrowUpRight className="w-4 h-4 stroke-[3]" />
-              </Link>
-            </div>
-          </>
+        {!isAuthenticated && (
+          <button
+            onClick={() => store.openLoginModal()}
+            aria-label="Portal Sign In"
+            className="px-6 py-3 rounded-full bg-[#1B4B66] text-white font-['Sora'] font-extrabold text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer"
+          >
+            <Lock className="w-4 h-4 text-[#D4A62A] stroke-[2.5]" />
+            <span>Portal Sign In</span>
+          </button>
         )}
 
         {/* CASE B: Logged-In Member Single Bottom Navigation Bar */}
-        {!isPublicNewCustomerRoute && isAuthenticated && currentUser.role === 'member' && (
+        {isAuthenticated && currentUser.role === 'member' && (
           <>
             <Link
               to="/dashboard"
@@ -340,50 +276,17 @@ export const BottomNavDock: React.FC = () => {
           </>
         )}
 
-        {/* CASE C: Staff Portals Single Navigation Control */}
-        {!isPublicNewCustomerRoute && isAuthenticated && currentUser.role !== 'member' && (
+        {/* CASE C: Admin / Employee Navigation Control */}
+        {isAuthenticated && currentUser.role === 'employee' && (
           <>
             {currentUser.role === 'employee' && (
               <Link
                 to="/employee"
-                aria-label="Employee MRM Dashboard"
+                aria-label="Admin Employee Dashboard"
                 className="px-4 py-2.5 rounded-full bg-[#1B4B66] text-white font-extrabold text-xs flex items-center gap-1.5 shadow-md"
               >
                 <Users className="w-4 h-4" />
-                <span>Employee MRM</span>
-              </Link>
-            )}
-
-            {currentUser.role === 'support_agent' && (
-              <Link
-                to="/support"
-                aria-label="Support Desk Portal"
-                className="px-4 py-2.5 rounded-full bg-amber-500 text-slate-950 font-extrabold text-xs flex items-center gap-1.5 shadow-md"
-              >
-                <MessageSquare className="w-4 h-4" />
-                <span>Support Desk</span>
-              </Link>
-            )}
-
-            {currentUser.role === 'finance_admin' && (
-              <Link
-                to="/finance"
-                aria-label="Finance Admin Portal"
-                className="px-4 py-2.5 rounded-full bg-purple-700 text-white font-extrabold text-xs flex items-center gap-1.5 shadow-md"
-              >
-                <DollarSign className="w-4 h-4" />
-                <span>Finance Admin</span>
-              </Link>
-            )}
-
-            {currentUser.role === 'super_admin' && (
-              <Link
-                to="/admin"
-                aria-label="Super Admin Panel"
-                className="px-4 py-2.5 rounded-full bg-[#1B4B66] text-white font-extrabold text-xs flex items-center gap-1.5 shadow-md"
-              >
-                <LayoutDashboard className="w-4 h-4" />
-                <span>Super Admin</span>
+                <span>Admin / Employee Portal</span>
               </Link>
             )}
 

@@ -36,8 +36,8 @@ export const MRMDashboardPage: React.FC = () => {
 
   const pipelineColumns: { id: PipelineStage; title: string; color: string }[] = [
     { id: 'SIGNUP', title: '1. New Signup', color: 'border-slate-300 bg-slate-100 text-slate-700' },
-    { id: 'KYC_PENDING', title: '2. KYC Waiting', color: 'border-[#D4A62A] bg-[#D4A62A]/10 text-[#D4A62A]' },
-    { id: 'KYC_APPROVED', title: '3. KYC Approved', color: 'border-[#1F8A5F] bg-[#1F8A5F]/10 text-[#1F8A5F]' },
+    { id: 'KYC_PENDING', title: '2. Approval Pending', color: 'border-[#D4A62A] bg-[#D4A62A]/10 text-[#D4A62A]' },
+    { id: 'KYC_APPROVED', title: '3. Account Approved', color: 'border-[#1F8A5F] bg-[#1F8A5F]/10 text-[#1F8A5F]' },
     { id: 'PAYMENT_ACTIVE', title: '4. Active Saver', color: 'border-[#1B4B66] bg-[#1B4B66]/10 text-[#1B4B66]' },
     { id: 'GRACE_PERIOD', title: '5. Grace Warning', color: 'border-[#DB9A2C] bg-[#FDF6E2] text-[#DB9A2C]' },
     { id: 'HAMPER_SELECTED', title: '6. Hamper Locked', color: 'border-[#D4A62A] bg-amber-50 text-[#D4A62A]' },

@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { Link } from 'react-router-dom';
 import { Shield, Sparkles, ArrowRight, ArrowUpRight, CheckCircle2, Lock, Gift, Users, Coins, ChevronLeft, ChevronRight } from 'lucide-react';
+import { store } from '../store';
 
 export const LandingPage: React.FC = () => {
   const [monthlyDeposit, setMonthlyDeposit] = useState<number>(1000);
@@ -135,14 +135,14 @@ export const LandingPage: React.FC = () => {
           </p>
 
           <div id="hero-cta-button" className="flex items-center justify-center gap-4 pt-1">
-            <Link
-              to="/kyc"
-              className="px-6 sm:px-8 py-3.5 sm:py-4 rounded-full bg-[#1B4B66] hover:bg-[#123448] text-white font-['Sora'] font-extrabold text-xs sm:text-sm shadow-glow-blue hover:scale-105 transition-all flex items-center gap-2"
+            <button
+              onClick={() => store.openLoginModal()}
+              className="px-6 sm:px-8 py-3.5 sm:py-4 rounded-full bg-[#1B4B66] hover:bg-[#123448] text-white font-['Sora'] font-extrabold text-xs sm:text-sm shadow-glow-blue hover:scale-105 transition-all flex items-center gap-2 cursor-pointer"
               aria-label="Start Saving Today"
             >
               <span>Start Saving Today</span>
               <ArrowRight className="w-4 h-4" />
-            </Link>
+            </button>
           </div>
 
           {/* True Viewport Full-Bleed 3D Fan-Out Deck Showcase (w-screen breakout, 0px side gaps) */}

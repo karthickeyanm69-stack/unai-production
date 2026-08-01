@@ -45,19 +45,19 @@ export const DashboardPage: React.FC = () => {
 
           <div className="space-y-2">
             <span className="inline-block px-3.5 py-1 rounded-full bg-[#1B4B66]/10 text-[#1B4B66] font-mono font-bold text-xs">
-              ACCOUNT STATUS: PENDING HIGHER OFFICER APPROVAL
+              ACCOUNT STATUS: PENDING ADMIN APPROVAL
             </span>
             <h1 className="font-['Sora'] font-extrabold text-2xl sm:text-3xl text-[#1E2732]">
-              Welcome {user.fullName}! Your Application is Under Review
+              Welcome {user.fullName}! Your Account is Under Review
             </h1>
             <p className="text-xs sm:text-sm text-[#5C6773] max-w-lg mx-auto leading-relaxed">
-              Your goal savings account registration & AI document verification has been submitted to the **Higher Officer (Priya Verma - MRM Desk)** for final compliance review.
+              Your goal savings account registration has been submitted to the **Admin Officer (Priya Verma)** for final approval.
             </p>
           </div>
 
           {/* Verification Lifecycle Timeline */}
           <div className="bg-[#F8FAFC] border border-slate-200 rounded-[24px] p-6 text-left space-y-4">
-            <h3 className="font-['Sora'] font-bold text-xs uppercase tracking-wider text-[#1B4B66]">Application Compliance Verification</h3>
+            <h3 className="font-['Sora'] font-bold text-xs uppercase tracking-wider text-[#1B4B66]">Application Approval Status</h3>
             
             <div className="space-y-3 font-semibold text-xs">
               <div className="flex items-center justify-between p-3 rounded-xl bg-white border border-slate-200 text-[#1F8A5F]">
@@ -71,15 +71,15 @@ export const DashboardPage: React.FC = () => {
               <div className="flex items-center justify-between p-3 rounded-xl bg-white border border-slate-200 text-[#1F8A5F]">
                 <div className="flex items-center gap-2.5">
                   <CheckCircle2 className="w-4 h-4 text-[#1F8A5F]" />
-                  <span>2. AI Document OCR Verification</span>
+                  <span>2. System Account Creation</span>
                 </div>
-                <span className="font-mono text-[11px] font-bold">99.4% MATCHED</span>
+                <span className="font-mono text-[11px] font-bold">COMPLETED</span>
               </div>
 
               <div className="flex items-center justify-between p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 animate-pulse">
                 <div className="flex items-center gap-2.5">
                   <Clock className="w-4 h-4 text-amber-600" />
-                  <span>3. Higher Officer Review (Priya Verma - MRM Desk)</span>
+                  <span>3. Admin Officer Review (Priya Verma)</span>
                 </div>
                 <span className="font-mono text-[11px] font-bold">PENDING APPROVAL</span>
               </div>
@@ -197,21 +197,14 @@ export const DashboardPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Redesigned Section 5 High-Contrast Quick Action Pill Bar */}
+            {/* Quick Action Pill Bar */}
             <div className="bg-white border-2 border-[#1B4B66]/20 rounded-[24px] p-2 sm:p-2.5 flex items-center gap-2 sm:gap-3 shadow-premium">
               <Link
                 to="/pay"
                 className="flex-1 py-3.5 rounded-[18px] bg-[#1B4B66] hover:bg-[#123448] text-white transition-all flex items-center justify-center gap-2 text-xs font-extrabold shadow-md hover-lift"
               >
-                <span>Pay Monthly</span>
+                <span>Pay Offline to Admin</span>
                 <Send className="w-3.5 h-3.5 text-[#D4A62A]" />
-              </Link>
-              <Link
-                to="/payment-setup"
-                className="w-12 h-12 rounded-[18px] bg-[#1F8A5F] hover:bg-emerald-600 text-white transition-all flex items-center justify-center shadow-md shrink-0 hover-lift"
-                title="UPI Mandate"
-              >
-                <QrCode className="w-5 h-5 text-white" />
               </Link>
               <Link
                 to="/ledger"

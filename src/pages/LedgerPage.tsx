@@ -117,11 +117,11 @@ export const LedgerPage: React.FC = () => {
                     {c.status === 'paid' ? (
                       <span className="bg-[#1F8A5F]/10 text-[#1F8A5F] border border-[#1F8A5F]/30 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 w-max">
                         <CheckCircle2 className="w-3.5 h-3.5 text-[#1F8A5F]" />
-                        <span>Escrow Cleared</span>
+                        <span>PAID (Recorded by Admin)</span>
                       </span>
                     ) : (
-                      <span className="bg-slate-100 text-[#5C6773] border border-slate-200 px-3 py-1.5 rounded-full text-xs font-bold">
-                        Upcoming
+                      <span className="bg-amber-50 text-amber-800 border border-amber-200 px-3 py-1.5 rounded-full text-xs font-bold">
+                        Pending Admin Entry
                       </span>
                     )}
                   </td>

@@ -273,43 +273,21 @@ class StateStore {
     {
       id: 'emp_1',
       email: 'priya.verma@samruddisave.com',
-      fullName: 'Priya Verma',
+      fullName: 'Priya Verma (Admin)',
       phone: '+91 98765 11100',
       role: 'employee',
-      department: 'Member Operations',
+      department: 'Platform Admin & Member Operations',
       kycStatus: 'approved',
       avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&auto=format&fit=crop&q=80',
       createdAt: '2025-01-10',
     },
     {
-      id: 'supp_1',
-      email: 'support.agent@samruddisave.com',
-      fullName: 'Amit Hegde',
-      phone: '+91 98765 22200',
-      role: 'support_agent',
-      department: 'Customer Support Desk',
-      kycStatus: 'approved',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-      createdAt: '2025-01-12',
-    },
-    {
-      id: 'fin_1',
-      email: 'finance.admin@samruddisave.com',
-      fullName: 'Vikram Joshi',
-      phone: '+91 98765 33300',
-      role: 'finance_admin',
-      department: 'Finance Escrow',
-      kycStatus: 'approved',
-      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
-      createdAt: '2025-01-15',
-    },
-    {
       id: 'admin_1',
       email: 'rajesh.admin@samruddisave.com',
-      fullName: 'Rajesh Sharma',
+      fullName: 'Rajesh Sharma (Admin)',
       phone: '+91 98765 44400',
-      role: 'super_admin',
-      department: 'Executive Administration',
+      role: 'employee',
+      department: 'Platform Governance & Admin',
       kycStatus: 'approved',
       avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80',
       createdAt: '2025-01-01',
@@ -808,12 +786,12 @@ class StateStore {
         membership.status = 'ACTIVE_SAVER';
       }
 
-      this.logAuditAction('HIGHER_OFFICER_APPROVAL', 'Member Operations', `Officer ${officerName} approved account and KYC for member ${profile.fullName}`);
+      this.logAuditAction('ADMIN_OFFICER_APPROVAL', 'Member Operations', `Officer ${officerName} approved account for member ${profile.fullName}`);
       
       this.sendNotification(
         profile.id,
         'WHATSAPP',
-        `SamruddiSave Alert: Your account application has been APPROVED by Higher Officer ${officerName}! Your 12-Month Savings Wallet is now 100% active.`
+        `SamruddiSave Alert: Your account application has been APPROVED by Admin Officer ${officerName}! Your 12-Month Savings Wallet is now 100% active.`
       );
 
       this.notify();
@@ -986,6 +964,78 @@ class StateStore {
         paymentGatewayRef: isPaid ? `NPCI_UPI_${8900 + cycle * 22}` : undefined,
       };
     });
+  }
+
+  recordOfflinePayment(
+    userId: string,
+    cycleNumber: number,
+    amountInRupees: number,
+    paidDate?: string,
+    mode: 'OFFLINE_CASH' | 'OFFLINE_BANK_TRANSFER' | 'ADMIN_MANUAL_ENTRY' = 'OFFLINE_CASH',
+    notes?: string
+  ): boolean {
+    const user = this.profiles.find((p) => p.id === userId);
+    if (!user) return false;
+
+    // Check if user has initialized contributions array
+    const userContribs = this.contributions.filter((c) => c.userId === userId);
+    if (userContribs.length === 0) {
+      const membership = this.memberships.find((m) => m.userId === userId) || this.getMembership();
+      for (let c = 1; c <= 12; c++) {
+        this.contributions.push({
+          id: `cnt_${userId}_${c}`,
+          membershipId: membership.id,
+          userId: userId,
+          amountInPaise: amountInRupees * 100,
+          dueDate: `2026-0${((c - 1) % 12) + 1}-05`,
+          cycleNumber: c,
+          status: 'pending',
+        });
+      }
+    }
+
+    const targetContrib = this.contributions.find((c) => c.userId === userId && c.cycleNumber === cycleNumber);
+    if (targetContrib) {
+      targetContrib.status = 'paid';
+      targetContrib.paidDate = paidDate || new Date().toISOString().split('T')[0];
+      targetContrib.amountInPaise = amountInRupees * 100;
+      targetContrib.paymentMode = mode;
+      targetContrib.recordedByAdminId = this.currentUserId || 'emp_1';
+      targetContrib.recordedByAdminName = this.getCurrentUser().fullName || 'Admin Officer';
+      targetContrib.adminNotes = notes || 'Recorded offline cash payment by Admin';
+      targetContrib.paymentGatewayRef = `OFFLINE_${mode}_${Date.now().toString().slice(-6)}`;
+
+      // Update membership metrics
+      const membership = this.memberships.find((m) => m.userId === userId) || this.getMembership();
+      if (membership) {
+        const paidCount = this.contributions.filter((c) => c.userId === userId && c.status === 'paid').length;
+        membership.cyclesCompleted = paidCount;
+        membership.currentStreak = paidCount;
+        membership.totalPaidInPaise = paidCount * (amountInRupees * 100);
+        if (paidCount >= 12) {
+          membership.status = 'MATURED';
+          user.pipelineStage = 'COMPLETED';
+        } else {
+          membership.status = 'ACTIVE_SAVER';
+          user.pipelineStage = 'PAYMENT_ACTIVE';
+        }
+      }
+
+      this.saveSession();
+      this.logAuditAction(
+        'RECORD_OFFLINE_PAYMENT',
+        'Member Operations',
+        `Admin recorded offline payment for member ${user.fullName} for Cycle ${cycleNumber} (₹${amountInRupees})`
+      );
+      this.sendNotification(
+        userId,
+        'WHATSAPP',
+        `SamruddiSave Alert: Offline payment of ₹${amountInRupees} for Month ${cycleNumber} has been verified and recorded by Admin.`
+      );
+      this.notify();
+      return true;
+    }
+    return false;
   }
 
   getHampers(): HamperItem[] {
@@ -1204,8 +1254,8 @@ class StateStore {
 
   approveRefund(refundId: string) {
     const currentUser = this.getCurrentUser();
-    if (currentUser.role !== 'finance_admin' && currentUser.role !== 'super_admin') {
-      alert('Only Finance Admin or Super Admin can approve refunds.');
+    if (currentUser.role !== 'employee') {
+      alert('Only Admin Officer can approve refunds.');
       return;
     }
     const rf = this.refundRequests.find((r) => r.id === refundId);
@@ -1224,8 +1274,8 @@ class StateStore {
 
   verifyPayoutMaker(payoutId: string) {
     const currentUser = this.getCurrentUser();
-    if (currentUser.role !== 'employee' && currentUser.role !== 'super_admin') {
-      alert('Only Employee Operations Officer can verify Maker step.');
+    if (currentUser.role !== 'employee') {
+      alert('Only Admin Officer can verify Maker step.');
       return;
     }
     const pay = this.payoutRecords.find((p) => p.id === payoutId);
@@ -1240,22 +1290,18 @@ class StateStore {
 
   approvePayoutChecker(payoutId: string) {
     const currentUser = this.getCurrentUser();
-    if (currentUser.role !== 'finance_admin') {
-      alert('Segregation of Duties Enforced: Only Finance Admin can execute CHECKER approval step.');
+    if (currentUser.role !== 'employee') {
+      alert('Only Admin Officer can execute disbursal approval step.');
       return;
     }
     const pay = this.payoutRecords.find((p) => p.id === payoutId);
     if (pay) {
-      if (pay.verifiedByMakerId === currentUser.id) {
-        alert('PostgreSQL DB Enforcement Error: MAKER and CHECKER cannot be the same user ID (verified_by_maker_id <> auth.uid()).');
-        return;
-      }
       pay.status = 'APPROVED_BY_CHECKER';
       pay.checkerAdminId = currentUser.id;
       pay.checkerAdminName = `${currentUser.fullName} (Checker)`;
       pay.bankTransferRef = `ESCROW_TRANSFER_${Date.now().toString().slice(-6)}`;
       pay.disbursedAt = new Date().toISOString().replace('T', ' ').slice(0, 16);
-      this.logAuditAction('APPROVE_PAYOUT_CHECKER', 'Escrow Payouts', `CHECKER step approved for payout ${payoutId} by ${currentUser.fullName}`);
+      this.logAuditAction('APPROVE_PAYOUT_CHECKER', 'Escrow Payouts', `Disbursal approved for payout ${payoutId} by ${currentUser.fullName}`);
       this.notify();
     }
   }
@@ -1336,11 +1382,9 @@ class StateStore {
   }
 
   canAccessRoute(role: UserRole, path: string): boolean {
-    if ((role as string) === 'super_admin') return true;
-    if (path.startsWith('/admin')) return (role as string) === 'super_admin';
-    if (path.startsWith('/finance')) return role === 'finance_admin';
-    if (path.startsWith('/employee') || path.startsWith('/mrm')) return role === 'employee';
-    if (path.startsWith('/support')) return role === 'support_agent';
+    if (path.startsWith('/employee') || path.startsWith('/admin') || path.startsWith('/mrm') || path.startsWith('/finance') || path.startsWith('/support')) {
+      return role === 'employee';
+    }
     return true;
   }
 }

@@ -11,38 +11,33 @@ interface RoleGuardProps {
 
 // Maps a role to its correct home dashboard path
 const getHomeForRole = (role: UserRole): string => {
-  if (role === 'super_admin') return '/admin';
-  if (role === 'finance_admin') return '/finance';
-  if (role === 'support_agent') return '/support';
   if (role === 'employee') return '/employee';
-  return '/';
+  return '/dashboard';
 };
 
-// The staff & admin sign-in form (rendered when unauthenticated on /login)
-const StaffSignInForm: React.FC = () => {
+// The staff & admin sign-in form
+export const StaffSignInForm: React.FC = () => {
   const navigate = useNavigate();
-  const [staffEmail, setStaffEmail] = useState('priya.verma@samruddisave.com');
-  const [pin, setPin] = useState('1234');
+  const [staffEmail, setStaffEmail] = useState('');
+  const [pin, setPin] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const handleStaffLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     if (!staffEmail.trim()) {
-      setError('Please enter your email address or Employee ID.');
+      setError('Please enter your email address, phone, or account ID.');
       return;
     }
     const user = store.loginUser(staffEmail.trim(), pin);
     if (user) {
-      const staffRoles: UserRole[] = ['super_admin', 'finance_admin', 'support_agent', 'employee'];
-      if (staffRoles.includes(user.role)) {
-        navigate(getHomeForRole(user.role), { replace: true });
-      } else {
-        store.logoutUser();
-        setError('Customer account detected. Console is for internal staff only.');
+      if (user.role === 'member') {
+        navigate('/dashboard', { replace: true });
+      } else if (user.role === 'employee') {
+        navigate('/employee', { replace: true });
       }
     } else {
-      setError('Invalid credentials or PIN. Use your official @samruddisave.com email.');
+      setError('Invalid login credentials or PIN.');
     }
   };
 
@@ -76,39 +71,9 @@ const StaffSignInForm: React.FC = () => {
               </p>
             </div>
 
-            {/* Department Capabilities Breakdown */}
-            <div className="space-y-4 pt-2 text-xs font-semibold">
-              <div className="flex items-start gap-3">
-                <Building className="w-4.5 h-4.5 text-rose-400 shrink-0 mt-0.5" />
-                <div>
-                  <div className="font-bold text-white text-sm">Super Admin</div>
-                  <div className="text-xs text-slate-300 font-medium">System control & audit log access</div>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <DollarSign className="w-4.5 h-4.5 text-purple-400 shrink-0 mt-0.5" />
-                <div>
-                  <div className="font-bold text-white text-sm">Finance Escrow</div>
-                  <div className="text-xs text-slate-300 font-medium">Payout disbursements & bank ledger</div>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <LifeBuoy className="w-4.5 h-4.5 text-amber-400 shrink-0 mt-0.5" />
-                <div>
-                  <div className="font-bold text-white text-sm">Support Desk</div>
-                  <div className="text-xs text-slate-300 font-medium">Ticket queue & member resolution</div>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <Briefcase className="w-4.5 h-4.5 text-cyan-400 shrink-0 mt-0.5" />
-                <div>
-                  <div className="font-bold text-white text-sm">Member Operations (MRM)</div>
-                  <div className="text-xs text-slate-300 font-medium">Onboarding & member profile management</div>
-                </div>
-              </div>
+            {/* Placeholder for future logo implementation */}
+            <div className="py-6 flex items-center justify-center">
+              {/* Logo space reserved */}
             </div>
           </div>
 
@@ -141,6 +106,8 @@ const StaffSignInForm: React.FC = () => {
               Enter your official email address and 4-digit security PIN to access your portal.
             </p>
           </div>
+
+
 
           {error && (
             <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-[14px] text-rose-700 text-xs font-bold">
@@ -186,11 +153,7 @@ const StaffSignInForm: React.FC = () => {
             </button>
           </form>
 
-          <div className="pt-4 text-center border-t border-slate-100">
-            <Link to="/" className="text-xs text-[#5C6773] hover:text-[#1B4B66] font-semibold hover:underline">
-              ← Return to Public Main Website
-            </Link>
-          </div>
+
         </div>
 
       </div>
@@ -225,7 +188,7 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({ children, allowedRoles }) 
     return <Navigate to={getHomeForRole(role)} replace />;
   }
 
-  const isAllowed = allowedRoles.includes(role) || role === 'super_admin';
+  const isAllowed = allowedRoles.includes(role);
   if (isAllowed) return <>{children}</>;
 
   return <Navigate to={getHomeForRole(role)} replace />;
