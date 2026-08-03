@@ -1,52 +1,9 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Shield, Sparkles, ArrowRight, ArrowUpRight, CheckCircle2, Lock, Gift, Users, Coins, ChevronLeft, ChevronRight } from 'lucide-react';
 import { store } from '../store';
 
 export const LandingPage: React.FC = () => {
   const [monthlyDeposit, setMonthlyDeposit] = useState<number>(1000);
-  const [activeCardIndex, setActiveCardIndex] = useState<number>(2); // Center Vault HUD default
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  // Dynamic calculation for 12-Month Maturity
-  const totalSaved = monthlyDeposit * 12;
-  const cashBonus = totalSaved * 0.05; // 5% Cash Bonus
-  const giftHamperValue = monthlyDeposit >= 2000 ? 3000 : 2000;
-  const totalMaturityValue = totalSaved + cashBonus + giftHamperValue;
-
-  // Real-time active center detector for smooth scaling on ALL cards (1 to 5)
-  const handleCardsScroll = () => {
-    if (!scrollContainerRef.current) return;
-    const container = scrollContainerRef.current;
-    const containerCenter = container.scrollLeft + container.clientWidth / 2;
-    const children = Array.from(container.children) as HTMLElement[];
-    let closestIndex = 0;
-    let minDistance = Infinity;
-
-    const cardChildren = children.filter((child) => child.dataset.cardIdx !== undefined);
-
-    cardChildren.forEach((child) => {
-      const idx = Number(child.dataset.cardIdx);
-      const childCenter = child.offsetLeft + child.clientWidth / 2;
-      const distance = Math.abs(containerCenter - childCenter);
-      if (distance < minDistance) {
-        minDistance = distance;
-        closestIndex = idx;
-      }
-    });
-    setActiveCardIndex(closestIndex);
-  };
-
-  const scrollToCard = (index: number) => {
-    const targetIdx = (index + cardsData.length) % cardsData.length;
-    setActiveCardIndex(targetIdx);
-    if (!scrollContainerRef.current) return;
-    const container = scrollContainerRef.current;
-    const targetCard = container.querySelector(`[data-card-idx="${targetIdx}"]`) as HTMLElement;
-    if (targetCard) {
-      const targetScroll = targetCard.offsetLeft - (container.clientWidth - targetCard.clientWidth) / 2;
-      container.scrollTo({ left: targetScroll, behavior: 'smooth' });
-    }
-  };
 
   const cardsData = [
     {
@@ -111,6 +68,147 @@ export const LandingPage: React.FC = () => {
     },
   ];
 
+  // Dynamic calculation for 12-Month Maturity
+  const totalSaved = monthlyDeposit * 12;
+  const cashBonus = totalSaved * 0.05; // 5% Cash Bonus
+  const giftHamperValue = monthlyDeposit >= 2000 ? 3000 : 2000;
+  const totalMaturityValue = totalSaved + cashBonus + giftHamperValue;
+
+  // Infinite Repeating Cards Array (5 sets of 5 cards = 25 cards total for continuous smooth scrolling)
+  const infiniteCards = [...cardsData, ...cardsData, ...cardsData, ...cardsData, ...cardsData];
+  const [activeCardIndex, setActiveCardIndex] = useState<number>(2);
+  const [centerCardIndex, setCenterCardIndex] = useState<number>(12); // Single physical center card index (0..24)
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const isMouseDownRef = useRef<boolean>(false);
+  const startXRef = useRef<number>(0);
+  const scrollLeftStartRef = useRef<number>(0);
+
+  const rafIdRef = useRef<number | null>(null);
+
+  const scrollTimeoutRef = useRef<number | null>(null);
+
+  // Mount setup: center default card (Vault HUD in middle set, index 12)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!scrollContainerRef.current) return;
+      const container = scrollContainerRef.current;
+      const cardNodes = container.querySelectorAll('[data-card-index]');
+      const targetCard = cardNodes[12] as HTMLElement;
+      if (targetCard) {
+        const targetScroll = targetCard.offsetLeft - (container.clientWidth - targetCard.clientWidth) / 2;
+        container.scrollLeft = targetScroll;
+      }
+    }, 120);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Real-time single physical center card detector (0 scroll mutation during scrolling)
+  const handleScroll = () => {
+    if (!scrollContainerRef.current) return;
+    const container = scrollContainerRef.current;
+
+    if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
+    rafIdRef.current = requestAnimationFrame(() => {
+      const containerCenter = container.scrollLeft + container.clientWidth / 2;
+      const cardNodes = Array.from(container.querySelectorAll('[data-card-index]')) as HTMLElement[];
+      if (cardNodes.length === 0) return;
+
+      let closestIdx = centerCardIndex;
+      let minDistance = Infinity;
+
+      cardNodes.forEach((node) => {
+        const idx = Number(node.dataset.cardIndex);
+        const nodeCenter = node.offsetLeft + node.clientWidth / 2;
+        const distance = Math.abs(containerCenter - nodeCenter);
+        if (distance < minDistance) {
+          minDistance = distance;
+          closestIdx = idx;
+        }
+      });
+
+      if (closestIdx !== centerCardIndex) {
+        setCenterCardIndex(closestIdx);
+        setActiveCardIndex(closestIdx % cardsData.length);
+      }
+    });
+
+    // Debounce boundary jump reset so scroll position is NEVER mutated while active user scrolling is happening
+    if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+    scrollTimeoutRef.current = window.setTimeout(() => {
+      if (!scrollContainerRef.current || isMouseDownRef.current) return;
+      const container = scrollContainerRef.current;
+      const cardNodes = Array.from(container.querySelectorAll('[data-card-index]')) as HTMLElement[];
+      if (cardNodes.length < 6) return;
+
+      const firstCard = cardNodes[0];
+      const sixthCard = cardNodes[5];
+      if (firstCard && sixthCard) {
+        const setWidth = sixthCard.offsetLeft - firstCard.offsetLeft;
+        if (setWidth > 0) {
+          if (container.scrollLeft < setWidth * 1) {
+            container.scrollLeft += setWidth * 2;
+          } else if (container.scrollLeft > setWidth * 3.5) {
+            container.scrollLeft -= setWidth * 2;
+          }
+        }
+      }
+    }, 250);
+  };
+
+  const scrollToSpecificCard = (cardIdx: number) => {
+    if (!scrollContainerRef.current) return;
+    const container = scrollContainerRef.current;
+    const cardNodes = container.querySelectorAll('[data-card-index]');
+    const targetCard = cardNodes[cardIdx] as HTMLElement;
+    if (targetCard) {
+      const targetScroll = targetCard.offsetLeft - (container.clientWidth - targetCard.clientWidth) / 2;
+      container.scrollTo({ left: targetScroll, behavior: 'smooth' });
+    }
+  };
+
+  const scrollToTier = (tierIdx: number) => {
+    // Find the instance of tierIdx (0..4) in the set closest to current centerCardIndex
+    const currentSet = Math.floor(centerCardIndex / 5);
+    const targetIndex = currentSet * 5 + tierIdx;
+    scrollToSpecificCard(targetIndex);
+  };
+
+  const scrollNext = () => {
+    if (!scrollContainerRef.current) return;
+    const container = scrollContainerRef.current;
+    const cardNode = container.querySelector('[data-card-index]') as HTMLElement;
+    const step = cardNode ? cardNode.clientWidth + 20 : 240;
+    container.scrollBy({ left: step, behavior: 'smooth' });
+  };
+
+  const scrollPrev = () => {
+    if (!scrollContainerRef.current) return;
+    const container = scrollContainerRef.current;
+    const cardNode = container.querySelector('[data-card-index]') as HTMLElement;
+    const step = cardNode ? cardNode.clientWidth + 20 : 240;
+    container.scrollBy({ left: -step, behavior: 'smooth' });
+  };
+
+  // Mouse Drag Support
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!scrollContainerRef.current) return;
+    isMouseDownRef.current = true;
+    startXRef.current = e.pageX - scrollContainerRef.current.offsetLeft;
+    scrollLeftStartRef.current = scrollContainerRef.current.scrollLeft;
+  };
+
+  const handleMouseLeaveOrUp = () => {
+    isMouseDownRef.current = false;
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isMouseDownRef.current || !scrollContainerRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollContainerRef.current.offsetLeft;
+    const walk = (x - startXRef.current) * 1.5;
+    scrollContainerRef.current.scrollLeft = scrollLeftStartRef.current - walk;
+  };
+
   return (
     <div className="min-h-screen bg-[#F7F5EF] text-[#1E2732] pb-32 pt-6 sm:pt-12">
       <main id="main-content" className="layout-container space-y-16">
@@ -146,14 +244,14 @@ export const LandingPage: React.FC = () => {
             </button>
           </div>
 
-          {/* True Viewport Full-Bleed 3D Fan-Out Deck Showcase (w-screen breakout, 0px side gaps) */}
+          {/* Infinite Repeating Horizontal Circle Carousel */}
           <div className="pt-6 sm:pt-10 pb-4 w-full relative">
             
             {/* Scroll Navigation Controls */}
             <div className="flex items-center justify-center gap-3 mb-4">
               <button
                 type="button"
-                onClick={() => scrollToCard(activeCardIndex - 1)}
+                onClick={scrollPrev}
                 className="w-8 h-8 rounded-full bg-white border border-[#1B4B66]/30 text-[#1B4B66] flex items-center justify-center hover:bg-slate-100 transition-all cursor-pointer shadow-sm active:scale-95"
                 aria-label="Previous Savings Tier Card"
               >
@@ -165,7 +263,7 @@ export const LandingPage: React.FC = () => {
                   <button
                     key={idx}
                     type="button"
-                    onClick={() => scrollToCard(idx)}
+                    onClick={() => scrollToTier(idx)}
                     className={`h-2 rounded-full transition-all cursor-pointer ${
                       activeCardIndex === idx ? 'w-6 bg-[#1B4B66]' : 'w-2 bg-slate-300 hover:bg-slate-400'
                     }`}
@@ -176,7 +274,7 @@ export const LandingPage: React.FC = () => {
 
               <button
                 type="button"
-                onClick={() => scrollToCard(activeCardIndex + 1)}
+                onClick={scrollNext}
                 className="w-8 h-8 rounded-full bg-white border border-[#1B4B66]/30 text-[#1B4B66] flex items-center justify-center hover:bg-slate-100 transition-all cursor-pointer shadow-sm active:scale-95"
                 aria-label="Next Savings Tier Card"
               >
@@ -184,35 +282,28 @@ export const LandingPage: React.FC = () => {
               </button>
             </div>
 
-            {/* True Viewport 100vw Full-Bleed Container (0px Side Gaps, Zero Padding) */}
+            {/* Continuous Smooth Horizontal Scroll Container (Repeating Card Deck with Headroom) */}
             <div
               ref={scrollContainerRef}
-              onScroll={handleCardsScroll}
-              className="flex items-end justify-start sm:justify-center -space-x-4 sm:-space-x-8 md:-space-x-10 w-screen relative left-1/2 -translate-x-1/2 overflow-x-auto snap-x snap-mandatory py-10 scrollbar-none px-0"
-              style={{ scrollBehavior: 'smooth' }}
+              onScroll={handleScroll}
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseLeaveOrUp}
+              onMouseLeave={handleMouseLeaveOrUp}
+              className="flex items-center justify-start gap-4 sm:gap-6 w-screen relative left-1/2 -translate-x-1/2 overflow-x-auto overflow-y-visible snap-x snap-proximity pt-16 pb-12 scrollbar-none touch-pan-x select-none px-[calc(50vw-110px)] sm:px-[calc(50vw-140px)]"
+              style={{ scrollBehavior: 'smooth', WebkitOverflowScrolling: 'touch' }}
             >
-              {cardsData.map((card, i) => {
-                const distance = Math.abs(i - activeCardIndex);
-                const isCenter = distance === 0;
-
-                // Dynamic 3D Fan-Out transforms: Middle Big in front (z-30), Sides Shorter stepping back (z-20, z-10)
-                let zIndexClass = 'z-10';
-                let transformClass = 'scale-[0.82] sm:scale-90 opacity-75 translate-y-4';
-
-                if (isCenter) {
-                  zIndexClass = 'z-30';
-                  transformClass = 'scale-100 sm:scale-115 -translate-y-4 shadow-2xl opacity-100 ring-4 ring-[#D4A62A]';
-                } else if (distance === 1) {
-                  zIndexClass = 'z-20';
-                  transformClass = 'scale-[0.92] sm:scale-95 translate-y-1 opacity-90 hover:opacity-100';
-                }
+              {infiniteCards.map((card, index) => {
+                const isCenter = index === centerCardIndex;
 
                 return (
                   <div
-                    key={card.id}
-                    data-card-idx={i}
-                    onClick={() => scrollToCard(i)}
-                    className={`snap-center w-[72vw] max-w-[220px] sm:w-56 h-[350px] sm:h-[400px] rounded-[28px] bg-gradient-to-b ${card.gradient} transition-all duration-500 shrink-0 border ${card.border} relative cursor-pointer ${zIndexClass} ${transformClass}`}
+                    key={`${card.id}-${index}`}
+                    data-card-index={index}
+                    onClick={() => scrollToSpecificCard(index)}
+                    className={`snap-center w-[72vw] max-w-[220px] sm:w-56 h-[350px] sm:h-[400px] rounded-[28px] bg-gradient-to-b ${card.gradient} transition-all duration-300 shrink-0 border ${card.border} relative cursor-pointer ${
+                      isCenter ? 'scale-105 sm:scale-115 -translate-y-3 shadow-2xl z-20 ring-4 ring-[#D4A62A] opacity-100' : 'scale-85 sm:scale-90 opacity-60 z-10'
+                    }`}
                   >
                     <div className="flex flex-col justify-between h-full p-4 sm:p-6 text-white overflow-hidden relative select-none">
                       
@@ -223,12 +314,12 @@ export const LandingPage: React.FC = () => {
                         <p className="text-[11px] text-slate-200">{card.sub}</p>
                       </div>
 
-                      {/* 3D Graphic Image Area (No Overlap) */}
+                      {/* 3D Graphic Image Area */}
                       <div className="my-auto py-2 flex items-center justify-center relative shrink-0 h-32 sm:h-36">
                         <img
                           src={card.img}
                           alt={card.alt}
-                          className={`max-h-full max-w-full object-contain drop-shadow-2xl transition-all duration-500 ${
+                          className={`max-h-full max-w-full object-contain drop-shadow-2xl transition-all duration-300 ${
                             isCenter ? 'scale-110 sm:scale-125' : 'scale-95'
                           }`}
                           onError={(e) => {
@@ -260,7 +351,7 @@ export const LandingPage: React.FC = () => {
                 );
               })}
             </div>
-            <p className="text-[11px] text-[#5C6773] font-bold text-center mt-1">← Tap arrows or cards to bring any savings tier to the front →</p>
+            <p className="text-[11px] text-[#5C6773] font-bold text-center mt-1">← Swipe, drag, or tap arrows for continuous infinite 3D card scrolling →</p>
           </div>
         </section>
 
