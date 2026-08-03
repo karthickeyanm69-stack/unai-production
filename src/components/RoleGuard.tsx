@@ -174,10 +174,19 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({ children, allowedRoles }) 
   }, []);
 
   const isAuthenticated = store.getIsAuthenticated();
-  const isLoginPage = location.pathname === '/login' || location.pathname === '/console';
+  const isLoginPage =
+    location.pathname === '/login' ||
+    location.pathname === '/staff-login' ||
+    location.pathname === '/admin-login' ||
+    location.pathname === '/employee-login' ||
+    location.pathname === '/console';
 
   if (!isAuthenticated) {
     if (isLoginPage) return <StaffSignInForm />;
+    // Unauthenticated attempts to access admin/employee routes redirect to staff login
+    if (allowedRoles.includes('employee')) {
+      return <Navigate to="/staff-login" replace />;
+    }
     return <Navigate to="/" replace />;
   }
 
@@ -185,11 +194,18 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({ children, allowedRoles }) 
   const role = currentUser.role;
 
   if (isLoginPage) {
-    return <Navigate to={getHomeForRole(role)} replace />;
+    return <StaffSignInForm />;
   }
 
   const isAllowed = allowedRoles.includes(role);
   if (isAllowed) return <>{children}</>;
 
+  // If a member attempts to access an admin/employee route (/admin or /employee),
+  // redirect them to /staff-login so they can sign into the Admin Console
+  if (allowedRoles.includes('employee') && role !== 'employee') {
+    return <Navigate to="/staff-login" replace />;
+  }
+
   return <Navigate to={getHomeForRole(role)} replace />;
 };
+

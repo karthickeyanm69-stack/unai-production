@@ -30,14 +30,14 @@ export const VisualGoalJourney: React.FC<VisualGoalJourneyProps> = ({ membership
     2: { date: 'Feb 5, 2026', ref: 'UPI_NPCI_8934', reward: '+1 Month Streak Protection', detail: '2nd consecutive cycle completed. Streak active.' },
     3: { date: 'Mar 5, 2026', ref: 'UPI_NPCI_8956', reward: 'Quarter 1 Milestone Badge', detail: '3-Month milestone achieved. Escrow audit passed.' },
     4: { date: 'Apr 5, 2026', ref: 'UPI_NPCI_8978', reward: '+1 Month Streak Protection', detail: '4th cycle credited successfully.' },
-    5: { date: 'May 5, 2026', ref: 'UPI_NPCI_8990', reward: 'Pre-Hamper Streak Boost', detail: '1 cycle away from Month 6 Hamper Unlock!' },
-    6: { date: 'Jun 5, 2026', ref: 'UPI_NPCI_9012', reward: '🎁 Curated Gift Hamper Unlocked', detail: 'Congratulations! You unlocked the ₹2,000 Gift Hamper tier.' },
-    7: { date: 'Jul 5, 2026', ref: 'UPI_NPCI_9034', reward: '+1 Month Streak Protection', detail: '7th cycle credited. Halfway past maturity!' },
+    5: { date: 'May 5, 2026', ref: 'UPI_NPCI_8990', reward: '5th Cycle Credited', detail: '₹1,000 credited to escrow balance.' },
+    6: { date: 'Jun 5, 2026', ref: 'UPI_NPCI_9012', reward: 'Month 6 Halfway Milestone', detail: 'Congratulations! You reached the 6-month halfway milestone.' },
+    7: { date: 'Jul 5, 2026', ref: 'UPI_NPCI_9034', reward: '+1 Month Streak Protection', detail: '7th cycle credited. Past halfway mark!' },
     8: { date: 'Aug 5, 2026', ref: 'UPI_NPCI_9056', reward: '8-Month Streak Master Badge', detail: '8 consecutive months saved. Outstanding discipline!' },
     9: { date: 'Sep 5, 2026', ref: 'Pending AutoPay', reward: 'Next Due • Pay to Preserve Streak', detail: 'Cycle due on Sep 5, 2026. AutoPay active.' },
     10: { date: 'Oct 5, 2026', ref: 'Upcoming', reward: 'Pre-Maturity Build Phase', detail: 'Cycle 10 scheduled contribution.' },
     11: { date: 'Nov 5, 2026', ref: 'Upcoming', reward: 'Final Countdown Month', detail: 'Penultimate savings cycle before maturity!' },
-    12: { date: 'Dec 5, 2026', ref: 'Upcoming', reward: '🏆 Full Maturity Payout + 5% Cash Bonus!', detail: 'Final month! You receive ₹12,600 total + Gift Hamper delivery.' },
+    12: { date: 'Dec 5, 2026', ref: 'Upcoming', reward: '🏆 Full 12-Month Maturity & Gift Hamper Review!', detail: 'Final month! You receive ₹12,600 total + Gift Hamper review session & delivery.' },
   };
 
   const handleCardClick = (month: number) => {
@@ -81,12 +81,13 @@ export const VisualGoalJourney: React.FC<VisualGoalJourneyProps> = ({ membership
           const month = i + 1;
           const isDone = month <= currentMonth;
           const isCurrent = month === currentMonth + 1;
+          const cardMeta = monthDetailsMap[month];
 
           return (
             <div
               key={month}
               onClick={() => handleCardClick(month)}
-              className={`h-44 sm:h-48 rounded-[28px] sm:rounded-[32px] px-2 sm:px-3 py-4 sm:py-5 flex flex-col justify-between items-center text-center cursor-pointer transition-all duration-300 hover-lift ${
+              className={`relative h-48 sm:h-52 rounded-[28px] sm:rounded-[32px] px-2 sm:px-3 py-3.5 sm:py-4 flex flex-col justify-between items-center text-center cursor-pointer transition-all duration-300 hover-lift ${
                 isDone
                   ? 'bg-[#1F8A5F]/5 border border-[#1F8A5F]/35 text-[#1E2732] hover:border-[#1F8A5F] shadow-sm'
                   : isCurrent
@@ -94,41 +95,58 @@ export const VisualGoalJourney: React.FC<VisualGoalJourneyProps> = ({ membership
                   : 'bg-[#F8FAFC] border border-slate-200 text-slate-400 hover:border-slate-300'
               }`}
             >
+              {/* LIFTED TICK SYMBOL: Top Right Prominent Checkmark Badge for Completed Months */}
+              {isDone && (
+                <div
+                  className="absolute top-2 right-2 w-5 h-5 rounded-full bg-[#1F8A5F] text-white flex items-center justify-center shadow-sm"
+                  title="Payment Accepted & Approved by Admin"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                </div>
+              )}
+
               {/* Top Month Badge */}
-              <span className="font-mono text-[10px] sm:text-xs font-bold tracking-wider opacity-80">
+              <span className="font-mono text-[10px] sm:text-xs font-bold tracking-wider opacity-80 pt-0.5">
                 #{month}
               </span>
 
               {/* Middle Amount / Milestone Graphic */}
               <div className="my-auto space-y-1 w-full px-0.5">
-                {month === 6 ? (
-                  <div className="inline-flex flex-col items-center">
-                    <Gift className={`w-5 h-5 mb-0.5 ${isDone ? 'text-[#D4A62A]' : isCurrent ? 'text-[#D4A62A]' : 'text-slate-400'}`} />
-                    <span className="text-[9px] font-extrabold uppercase tracking-wider text-[#D4A62A]">Hamper</span>
-                  </div>
-                ) : month === 12 ? (
+                {month === 12 ? (
                   <div className="inline-flex flex-col items-center">
                     <Trophy className={`w-5 h-5 mb-0.5 ${isDone ? 'text-[#D4A62A]' : isCurrent ? 'text-[#D4A62A]' : 'text-slate-400'}`} />
-                    <span className="text-[9px] font-extrabold uppercase tracking-wider text-[#D4A62A]">Maturity</span>
+                    <span className="text-[8px] sm:text-[9px] font-extrabold uppercase tracking-wider text-[#D4A62A]">Maturity & Hamper</span>
                   </div>
                 ) : (
-                  <span className="font-['Sora'] font-extrabold text-[11px] sm:text-xs md:text-sm tracking-tight tabular-nums block truncate">
-                    ₹1,000
-                  </span>
+                  <div>
+                    <span className="font-['Sora'] font-extrabold text-[11px] sm:text-xs md:text-sm tracking-tight tabular-nums block truncate">
+                      ₹1,000
+                    </span>
+                    {/* ACCEPTED DATA BY ADMIN DISPLAY */}
+                    {isDone && (
+                      <div className="mt-1 pt-1 border-t border-[#1F8A5F]/20 space-y-0.5">
+                        <span className="text-[8px] font-extrabold text-[#1F8A5F] block uppercase tracking-tight">
+                          Accepted by Admin
+                        </span>
+                        <span className="text-[9px] font-mono font-bold text-[#1E2732] block truncate">
+                          {cardMeta?.date || 'Jan 5, 2026'}
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
 
               {/* Bottom Status Indicator */}
-              <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider w-full">
+              <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider w-full pb-0.5">
                 {isDone ? (
-                  <span className="text-[#1F8A5F] flex items-center justify-center gap-1">
-                    <CheckCircle2 className="w-3 h-3 text-[#1F8A5F]" />
-                    <span className="hidden sm:inline">Done</span>
+                  <span className="text-[#1F8A5F] font-extrabold block text-[9px]">
+                    Approved
                   </span>
                 ) : isCurrent ? (
                   <span className="text-[#D4A62A] flex items-center justify-center gap-0.5 font-extrabold">
                     <Sparkles className="w-3 h-3 text-[#D4A62A]" />
-                    <span className="truncate">Due</span>
+                    <span className="truncate">DUE</span>
                   </span>
                 ) : (
                   <span className="text-slate-400 flex items-center justify-center gap-0.5">

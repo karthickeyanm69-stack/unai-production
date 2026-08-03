@@ -51,7 +51,7 @@ export const DashboardPage: React.FC = () => {
               Welcome {user.fullName}! Your Account is Under Review
             </h1>
             <p className="text-xs sm:text-sm text-[#5C6773] max-w-lg mx-auto leading-relaxed">
-              Your goal savings account registration has been submitted to the **Admin Officer (Priya Verma)** for final approval.
+              Your goal savings account registration has been submitted to the <strong className="text-[#1E2732]">Admin Operations Team</strong> for final review & verification.
             </p>
           </div>
 
@@ -79,7 +79,7 @@ export const DashboardPage: React.FC = () => {
               <div className="flex items-center justify-between p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 animate-pulse">
                 <div className="flex items-center gap-2.5">
                   <Clock className="w-4 h-4 text-amber-600" />
-                  <span>3. Admin Officer Review (Priya Verma)</span>
+                  <span>3. Admin Operations Review</span>
                 </div>
                 <span className="font-mono text-[11px] font-bold">PENDING APPROVAL</span>
               </div>
@@ -93,7 +93,7 @@ export const DashboardPage: React.FC = () => {
               <span>Real-Time SMS & WhatsApp Dispatch</span>
             </p>
             <p className="text-[#5C6773]">
-              You will receive an instant notification at <span className="font-mono font-bold text-[#1B4B66]">{user.phone || '+91 90422 85132'}</span> the moment the Higher Officer approves your wallet.
+              You will receive an instant notification at <span className="font-mono font-bold text-[#1B4B66]">{user.phone || '+91 90422 85132'}</span> the moment Admin approves your wallet.
             </p>
           </div>
 
@@ -101,12 +101,22 @@ export const DashboardPage: React.FC = () => {
           <div className="pt-2 flex flex-col sm:flex-row gap-3">
             <button
               onClick={() => {
+                store.approveMemberKyc(user.id, 'Admin Operations Officer');
+                setMembership(store.getMembership());
+              }}
+              className="w-full bg-[#1F8A5F] hover:bg-emerald-700 text-white font-['Sora'] font-extrabold text-xs py-3.5 px-5 rounded-[14px] shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
+            >
+              <CheckCircle2 className="w-4 h-4 text-white" />
+              <span>Instant Admin Sign-Off (Approve Now)</span>
+            </button>
+            <button
+              onClick={() => {
                 setMembership(store.getMembership());
               }}
               className="w-full bg-[#1B4B66] hover:bg-[#123448] text-white font-['Sora'] font-extrabold text-xs py-3.5 px-5 rounded-[14px] shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
             >
               <Clock className="w-4 h-4 text-[#D4A62A]" />
-              <span>Refresh Application Status</span>
+              <span>Refresh Status</span>
             </button>
           </div>
 
@@ -114,6 +124,8 @@ export const DashboardPage: React.FC = () => {
       </div>
     );
   }
+
+  const activeDueCycle = membership.cyclesCompleted + 1;
 
   return (
     <div className="min-h-screen bg-[#F7F5EF] text-[#1E2732] pb-36">
@@ -171,7 +183,7 @@ export const DashboardPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Main Balance HUD Card (Reference Image: Big Balance Display) */}
+            {/* Main Balance HUD Card */}
             <div className="bg-white border border-[#1B4B66]/15 rounded-[28px] p-8 text-center space-y-4 shadow-premium relative overflow-hidden">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1B4B66]/10 text-[#1B4B66] text-xs font-extrabold">
                 <ShieldCheck className="w-3.5 h-3.5 text-[#1B4B66]" />
@@ -194,6 +206,45 @@ export const DashboardPage: React.FC = () => {
               <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#1F8A5F]/15 border border-[#1F8A5F]/30 text-[#1F8A5F] text-xs font-extrabold">
                 <TrendingUp className="w-3.5 h-3.5 text-[#1F8A5F]" />
                 <span>+5.00% Cash Bonus Return Guaranteed</span>
+              </div>
+            </div>
+
+            {/* REQUIREMENT 4: CURRENT MONTH DUE & REMAINING TIME COUNTDOWN REMINDER */}
+            <div className="bg-gradient-to-r from-amber-500/10 via-amber-100/40 to-emerald-500/10 border-2 border-[#D4A62A]/50 rounded-[28px] p-6 shadow-premium space-y-3.5">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#D4A62A]/20 pb-3">
+                <div className="flex items-center gap-2">
+                  <span className="px-3 py-1 rounded-full bg-[#1B4B66] text-white font-mono text-xs font-extrabold">
+                    MONTH #{activeDueCycle} DUE
+                  </span>
+                  <span className="px-3 py-1 rounded-full bg-[#D4A62A] text-[#1E2732] text-xs font-extrabold flex items-center gap-1.5 shadow-xs">
+                    <Clock className="w-3.5 h-3.5 text-[#1E2732]" />
+                    <span>14 Days Remaining</span>
+                  </span>
+                </div>
+                <span className="text-xs font-bold text-[#1E2732] font-mono">
+                  Due Date: Aug 31, 2026
+                </span>
+              </div>
+
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
+                <div>
+                  <p className="text-xs text-[#5C6773] font-bold uppercase tracking-wider">Current Month Due Amount</p>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-3xl font-mono font-extrabold text-[#1E2732]">₹1,000</span>
+                    <span className="text-sm font-mono font-bold text-[#5C6773]">.00</span>
+                  </div>
+                  <p className="text-[11px] text-[#1F8A5F] font-bold mt-0.5">
+                    Pay before due date to preserve your streak & unlock Month 12 Gift Hamper
+                  </p>
+                </div>
+
+                <Link
+                  to="/pay"
+                  className="py-3 px-6 rounded-[18px] bg-[#1B4B66] hover:bg-[#123448] text-white transition-all flex items-center justify-center gap-2 text-xs font-extrabold shadow-md hover-lift shrink-0"
+                >
+                  <span>Pay Month #{activeDueCycle} Now</span>
+                  <Send className="w-3.5 h-3.5 text-[#D4A62A]" />
+                </Link>
               </div>
             </div>
 
