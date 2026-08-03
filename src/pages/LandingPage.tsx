@@ -37,10 +37,11 @@ export const LandingPage: React.FC = () => {
   };
 
   const scrollToCard = (index: number) => {
-    setActiveCardIndex(index);
+    const targetIdx = (index + cardsData.length) % cardsData.length;
+    setActiveCardIndex(targetIdx);
     if (!scrollContainerRef.current) return;
     const container = scrollContainerRef.current;
-    const targetCard = container.querySelector(`[data-card-idx="${index}"]`) as HTMLElement;
+    const targetCard = container.querySelector(`[data-card-idx="${targetIdx}"]`) as HTMLElement;
     if (targetCard) {
       const targetScroll = targetCard.offsetLeft - (container.clientWidth - targetCard.clientWidth) / 2;
       container.scrollTo({ left: targetScroll, behavior: 'smooth' });
@@ -152,8 +153,8 @@ export const LandingPage: React.FC = () => {
             <div className="flex items-center justify-center gap-3 mb-4">
               <button
                 type="button"
-                onClick={() => scrollToCard(Math.max(0, activeCardIndex - 1))}
-                className="w-8 h-8 rounded-full bg-white border border-[#1B4B66]/30 text-[#1B4B66] flex items-center justify-center hover:bg-slate-100 transition-all cursor-pointer shadow-sm"
+                onClick={() => scrollToCard(activeCardIndex - 1)}
+                className="w-8 h-8 rounded-full bg-white border border-[#1B4B66]/30 text-[#1B4B66] flex items-center justify-center hover:bg-slate-100 transition-all cursor-pointer shadow-sm active:scale-95"
                 aria-label="Previous Savings Tier Card"
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -175,8 +176,8 @@ export const LandingPage: React.FC = () => {
 
               <button
                 type="button"
-                onClick={() => scrollToCard(Math.min(4, activeCardIndex + 1))}
-                className="w-8 h-8 rounded-full bg-white border border-[#1B4B66]/30 text-[#1B4B66] flex items-center justify-center hover:bg-slate-100 transition-all cursor-pointer shadow-sm"
+                onClick={() => scrollToCard(activeCardIndex + 1)}
+                className="w-8 h-8 rounded-full bg-white border border-[#1B4B66]/30 text-[#1B4B66] flex items-center justify-center hover:bg-slate-100 transition-all cursor-pointer shadow-sm active:scale-95"
                 aria-label="Next Savings Tier Card"
               >
                 <ChevronRight className="w-4 h-4" />
